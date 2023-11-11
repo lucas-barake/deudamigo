@@ -11,6 +11,11 @@
     }
   ],
   "compilerOptions": {
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "baseUrl": ".",
+    "paths": {
+      "@api/*": ["./src/app/*"],
+      "@deudamigo/ts-rest": ["../../libs/ts-rest/src/index.ts"]
+    }
   }
 }
