@@ -1,0 +1,161 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model PersonalExpense {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+  name        String
+  description String?  @db.Text
+  currency    String
+  amount      Float
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([userId, amount])
+}
+
+enum DebtRecurringFrequency {
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+}
+
+model Debt {
+  id                 String                  @id @default(uuid())
+  createdAt          DateTime                @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime                @updatedAt @db.Timestamptz(6)
+  name               String
+  description        String?                 @db.Text
+  currency           String
+  amount             Float
+  lenderId           String
+  lender             User                    @relation(fields: [lenderId], references: [id])
+  archived           DateTime?               @db.Timestamptz(6)
+  recurringFrequency DebtRecurringFrequency?
+  dueDate            DateTime?               @db.Timestamptz(6)
+  duration           Int? // number of periods (if recurring)
+  payments           Payment[]
+  borrowers          Borrower[]
+  pendingInvites     PendingInvite[]
+  processedAt        DateTime?               @db.Timestamptz(6) // when the debt was processed by the cron job
+
+  @@index([lenderId, archived])
+  @@index([createdAt])
+}
+
+enum PaymentStatus {
+  PAID
+  MISSED // for recurrent debts and non-recurrent debts with due date
+  PENDING_CONFIRMATION // for the lender to confirm the payment
+}
+
+model Payment {
+  id         String        @id @default(uuid())
+  createdAt  DateTime      @default(now()) @db.Timestamptz(6)
+  amount     Float
+  status     PaymentStatus
+  borrowerId String
+  borrower   Borrower      @relation(fields: [borrowerId, debtId], references: [userId, debtId])
+  debtId     String
+  debt       Debt          @relation(fields: [debtId], references: [id])
+}
+
+model Borrower {
+  createdAt DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @db.Timestamptz(6)
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  debtId    String
+  debt      Debt      @relation(fields: [debtId], references: [id])
+  payments  Payment[]
+  balance   Float // amount remaining to be paid by the borrower for the debt or payment
+
+  @@id([userId, debtId])
+  @@index([debtId])
+}
+
+model PendingInvite {
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  inviteeEmail String
+  inviterId    String
+  inviter      User     @relation(fields: [inviterId], references: [id])
+  debtId       String
+  debt         Debt     @relation(fields: [debtId], references: [id])
+
+  @@id([inviteeEmail, debtId])
+}
+
+enum SubscriptionType {
+  BASIC
+}
+
+enum SubscriptionStatus {
+  SUCCESS
+  PENDING
+  FAILED
+  CANCELLED
+}
+
+model ActiveSubscription {
+  id                String             @id // MercadoPago's generated ID
+  createdAt         DateTime           @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime           @updatedAt @db.Timestamptz(6)
+  userId            String             @unique
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type              SubscriptionType
+  status            SubscriptionStatus
+  nextDueDate       DateTime           @db.Timestamptz(6)
+  externalReference String
+  startDate         DateTime           @db.Timestamptz(6)
+  endDate           DateTime           @db.Timestamptz(6)
+}
+
+model SubscriptionHistory {
+  id                String             @id // MercadoPago's generated ID
+  createdAt         DateTime           @default(now()) @db.Timestamptz(6)
+  userId            String
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type              SubscriptionType
+  status            SubscriptionStatus
+  nextDueDate       DateTime           @db.Timestamptz(6)
+  externalReference String
+  startDate         DateTime           @db.Timestamptz(6)
+  endDate           DateTime           @db.Timestamptz(6)
+}
+
+model SubscriptionInvoice {
+  id                String   @id @default(uuid())
+  invoiceId         BigInt // MercadoPago's generated ID for the invoice
+  createdAt         DateTime @default(now()) @db.Timestamptz(6)
+  user              User     @relation(fields: [userId], references: [id])
+  userId            String
+  externalReference String
+}
+
+model User {
+  id                   String                @id @default(uuid())
+  name                 String?
+  email                String?               @unique
+  emailVerified        DateTime?             @db.Timestamptz(6)
+  phoneNumber          String?               @unique
+  phoneVerified        DateTime?             @db.Timestamptz(6)
+  image                String?
+  preferences          Json?
+  debtsAsLender        Debt[]
+  debtsAsBorrower      Borrower[]
+  pendingInvites       PendingInvite[]
+  activeSubscription   ActiveSubscription?
+  subscriptionHistory  SubscriptionHistory[]
+  subscriptionInvoices SubscriptionInvoice[]
+  personalExpenses     PersonalExpense[]
+
+  @@index([email])
+}

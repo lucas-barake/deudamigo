@@ -1,0 +1,132 @@
+@import url("https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;0,1000;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900;1,1000&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+
+    --background-secondary: 220 13% 96%;
+    --foreground-secondary: 222.2 47.4% 11.2%;
+
+    --background-tertiary: 220 13% 91%;
+    --foreground-tertiary: 222.2 47.4% 11.2%;
+
+    --background-quaternary: 0 0% 88%;
+    --foreground-quaternary: 222.2 47.4% 11.2%;
+
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 30%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --input-focus: 243, 75%, 59%;
+
+    --primary: 243 75% 59%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 0 0% 92%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --tertiary: 0 0% 9%;
+    --tertiary-foreground: 210 40% 98%;
+
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+
+    --destructive: 0 100% 44%;
+    --destructive-foreground: 210 40% 98%;
+
+    --success: 142 76% 32%;
+    --success-foreground: 0 0% 100%;
+    --success-text: 142 76% 32%;
+
+    --warning: 27 96% 50%;
+    --warning-foreground: 0 0% 100%;
+    --warning-text: 27 96% 45%;
+
+    --highlight: 20 90% 47%;
+    --highlight-foreground: 0 0% 100%;
+
+    --ring: 0 0% 63.9%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 0 0% 7.9%;
+    --foreground: 0 0% 98%;
+
+    --background-secondary: 0 0% 9.9%;
+    --foreground-secondary: 0 0% 98%;
+
+    --background-tertiary: 0 0% 11.9%;
+    --foreground-tertiary: 0 0% 98%;
+
+    --background-quaternary: 0 0% 18%;
+    --foreground-quaternary: 0 0% 100%;
+
+    --muted: 0 0% 16.9%;
+    --muted-foreground: 0 0% 75%;
+
+    --popover: 0 0% 7.9%;
+    --popover-foreground: 0 0% 90%;
+
+    --card: 0 0% 7.9%;
+    --card-foreground: 0 0% 98%;
+
+    --border: 0 0% 16.9%;
+    --input: 0 0% 16.9%;
+    --input-focus: 239, 84%, 67%;
+
+    --primary: 243 75% 59%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 24%;
+    --secondary-foreground: 210 40% 98%;
+
+    --tertiary: 210 40% 98%;
+    --tertiary-foreground: 222.2 47.4% 1.2%;
+
+    --accent: 0 0% 18.9%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 84% 55%;
+    --destructive-foreground: 210 40% 98%;
+
+    --success: 142 76% 25%;
+    --success-foreground: 0 0% 100%;
+    --success-text: 142 76% 50%;
+
+    --warning: 27 96% 35%;
+    --warning-foreground: 0 0% 100%;
+    --warning-text: 27 96% 55%;
+
+    --highlight: 20 90% 50%;
+    --highlight-foreground: 0 0% 100%;
+
+    --ring: 239, 84%, 67%;
+
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply min-h-screen bg-background font-sans text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
