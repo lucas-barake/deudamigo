@@ -15,6 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@deudamigo/database": ["libs/database/src/index.ts"],
       "@deudamigo/ts-rest": ["libs/ts-rest/src/index.ts"]
     }
   },

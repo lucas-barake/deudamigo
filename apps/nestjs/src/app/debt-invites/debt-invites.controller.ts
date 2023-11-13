@@ -1,15 +1,15 @@
 import { Controller } from "@nestjs/common";
 import { DebtInvitesService } from "@api/debt-invites/debt-invites.service";
 import { TsRestHandler, tsRestHandler } from "@ts-rest/nest";
-import { type SendDebtInviteResponseShapes, debtInvitesRouter } from "@deudamigo/ts-rest";
+import { type SendDebtInviteResponseShapes, contracts } from "@deudamigo/ts-rest";
 
-@Controller("debt-invites")
+@Controller()
 export class DebtInvitesController {
   constructor(private readonly service: DebtInvitesService) {}
 
-  @TsRestHandler(debtInvitesRouter.sendDebtInvite)
-  public async handler() {
-    return tsRestHandler(debtInvitesRouter.sendDebtInvite, async ({ body }) => {
+  @TsRestHandler(contracts.debtInvites.sendDebtInvite)
+  public async sendInvite() {
+    return tsRestHandler(contracts.debtInvites.sendDebtInvite, async ({ body }) => {
       const newInvite = await this.service.sendDebtInvite(body);
 
       return {
