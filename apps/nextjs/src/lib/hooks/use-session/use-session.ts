@@ -8,7 +8,7 @@ type UseSessionReturn = {
   user: AuthStore["user"];
   status: AuthStore["status"];
   refresh: () => void;
-  clear: () => void;
+  signOut: () => Promise<void>;
 };
 type UseSessionArgs =
   | {
@@ -20,6 +20,12 @@ export function useSession(args: UseSessionArgs = {}): UseSessionReturn {
   const auth = useAuthStore();
   const router = useRouter();
 
+  const signOutMutation = api.auth.logout.useMutation({
+    onSuccess() {
+      auth.clear();
+      void router.push(Pages.HOME);
+    },
+  });
   const meQuery = api.auth.me.useQuery(["me"], api.auth.me.query, {
     cacheTime: TimeInMs.FortyFiveMinutes,
     staleTime: TimeInMs.FortyFiveMinutes,
@@ -49,8 +55,10 @@ export function useSession(args: UseSessionArgs = {}): UseSessionReturn {
     refresh() {
       meQuery.refetch();
     },
-    clear() {
-      auth.clear();
+    async signOut() {
+      await signOutMutation.mutateAsync({
+        body: {},
+      });
     },
   };
 }

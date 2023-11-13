@@ -5,6 +5,7 @@ import { prisma, type Prisma } from "@deudamigo/database";
 import { type User } from "@deudamigo/ts-rest";
 
 const userSelect = {
+  id: true,
   email: true,
   image: true,
   name: true,
@@ -44,7 +45,6 @@ export class AuthService {
     const userInfo = await prisma.user.upsert({
       where: { email: decodedToken.email },
       create: {
-        id: decodedToken.uid,
         email: decodedToken.email,
         image: decodedToken.picture,
         name: decodedToken.name,
@@ -55,6 +55,11 @@ export class AuthService {
       },
       select: userSelect,
     });
+
+    await admin.auth().setCustomUserClaims(decodedToken.uid, {
+      dbUserId: userInfo.id,
+    });
+
     return { decodedToken, userInfo };
   }
 

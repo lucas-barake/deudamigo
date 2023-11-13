@@ -1,25 +1,22 @@
 import React from "react";
-import { signOut, useSession } from "next-auth/react";
 import { Button } from "$/components/ui/button";
 import { DropdownMenu } from "$/components/ui/dropdown-menu";
 import { Avatar } from "$/components/ui/avatar";
 import { CreditCard, LogOut } from "lucide-react";
 import { SubscriptionsDialog } from "$/components/common/subscriptions-dialog";
 import { cn } from "$/lib/utils/cn";
+import { useSession } from "$/lib/hooks/use-session";
 
 export const ProfileMenu: React.FC = () => {
   const session = useSession();
-  const hasSubscription = session.data?.user?.subscription?.isActive ?? false;
-  const [showSubscriptionsDialog, setShowSubscriptionsDialog] =
-    React.useState(false);
-  const userImage = session.data?.user?.image ?? undefined;
+  const [showSubscriptionsDialog, setShowSubscriptionsDialog] = React.useState(false);
 
   return (
     <React.Fragment>
-      <SubscriptionsDialog
-        open={showSubscriptionsDialog}
-        onOpenChange={setShowSubscriptionsDialog}
-      />
+      {/*<SubscriptionsDialog*/}
+      {/*  open={showSubscriptionsDialog}*/}
+      {/*  onOpenChange={setShowSubscriptionsDialog}*/}
+      {/*/>*/}
 
       <DropdownMenu>
         <DropdownMenu.Trigger asChild>
@@ -27,15 +24,14 @@ export const ProfileMenu: React.FC = () => {
             variant="ghost"
             size="icon"
             className={cn(
-              hasSubscription &&
+              session.user?.activeSubscription &&
                 "bg-yellow-500/10 hover:bg-yellow-500/20 dark:bg-yellow-500/5 dark:hover:bg-yellow-500/10"
-            )}
-          >
+            )}>
             <Avatar className="h-6 w-6">
-              <Avatar.Image src={userImage} />
+              <Avatar.Image src={session.user?.image ?? ""} />
 
               <Avatar.Fallback className="bg-indigo-200 dark:bg-indigo-800">
-                {session.data?.user?.name?.charAt(0) ?? "?"}
+                {session.user?.name?.[0] ?? "?"}
               </Avatar.Fallback>
             </Avatar>
           </Button>
@@ -43,9 +39,9 @@ export const ProfileMenu: React.FC = () => {
 
         <DropdownMenu.Content className="w-56">
           <DropdownMenu.Label>
-            {session.data?.user?.name ?? "Usuario"}
-            <p className="text-xs leading-none text-muted-foreground">
-              {session.data?.user?.email ?? ""}
+            {session.user?.name ?? "Usuario"}
+            <p className="text-muted-foreground text-xs leading-none">
+              {session.user?.email ?? ""}
             </p>
           </DropdownMenu.Label>
 
@@ -58,8 +54,7 @@ export const ProfileMenu: React.FC = () => {
                 onClick={() => {
                   setShowSubscriptionsDialog(true);
                 }}
-                className="w-full cursor-pointer"
-              >
+                className="w-full cursor-pointer">
                 <CreditCard className="mr-2 h-4 w-4" />
                 <span>Suscripciones</span>
               </button>
@@ -69,10 +64,9 @@ export const ProfileMenu: React.FC = () => {
               <button
                 type="button"
                 onClick={() => {
-                  void signOut();
+                  void session.signOut();
                 }}
-                className="w-full cursor-pointer"
-              >
+                className="w-full cursor-pointer">
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Cerrar Sesión</span>
               </button>

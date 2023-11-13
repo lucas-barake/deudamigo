@@ -2,9 +2,11 @@ import { admin } from "@api/auth/firebase-admin.module";
 import { Injectable, type CanActivate, type ExecutionContext } from "@nestjs/common";
 import { type Request } from "express";
 
-type NonOptional<T extends object, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
 export type ReqWithUser = Request & {
-  user: NonOptional<admin.auth.DecodedIdToken, "email">;
+  user: {
+    id: string;
+    email: string;
+  };
   token: string;
 };
 
@@ -21,8 +23,10 @@ export class FirebaseAuthGuard implements CanActivate {
       .verifySessionCookie(sessionCookie, true)
       .then((decodedClaims) => {
         if (decodedClaims.email === undefined) return false;
-
-        request.user = decodedClaims as ReqWithUser["user"];
+        request.user = {
+          email: decodedClaims.email,
+          id: decodedClaims.dbUserId,
+        };
         return true;
       })
       .catch(() => {

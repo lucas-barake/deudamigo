@@ -1,14 +1,13 @@
 import React from "react";
 import { Dialog } from "$/components/ui/dialog";
 import { Button } from "$/components/ui/button";
-import { api } from "$/lib/utils/api";
-import { useSession } from "next-auth/react";
 import * as LucideIcons from "lucide-react";
 import { DateTime } from "luxon";
-import { type UpdateSessionSubscription } from "$/server/auth/update-session-schemas";
 import { cn } from "$/lib/utils/cn";
 import toast from "react-hot-toast";
 import { handleMutationError } from "$/lib/utils/handle-mutation-error";
+import { useSession } from "$/lib/hooks/use-session";
+import { api } from "$/lib/configs/react-query-client";
 
 type Props = {
   open: boolean;
@@ -21,10 +20,9 @@ export const SubscriptionsDialog: React.FC<Props> = ({
   onOpenChange,
   reachedFreeLimit = false,
 }) => {
-  const [openCancelSubscriptionDialog, setOpenCancelSubscriptionDialog] =
-    React.useState(false);
+  const [openCancelSubscriptionDialog, setOpenCancelSubscriptionDialog] = React.useState(false);
   const session = useSession();
-  const subscription = session.data?.user.subscription;
+  const subscription = session.user?.activeSubscription;
   const isSubscriptionActiveOrPending =
     subscription?.status === "SUCCESS" || subscription?.status === "PENDING";
   const isSubscriptionCancelledAndActive =
@@ -34,22 +32,18 @@ export const SubscriptionsDialog: React.FC<Props> = ({
       window.location.href = data.paymentLink;
     },
   });
-  const cancelSubscriptionMutation =
-    api.subscriptions.cancelSubscription.useMutation({
-      onSuccess() {
-        setOpenCancelSubscriptionDialog(false);
-        void session.update({
-          cancelledSubscription: true,
-        } satisfies UpdateSessionSubscription);
-      },
-    });
+  const cancelSubscriptionMutation = api.subscriptions.cancelSubscription.useMutation({
+    onSuccess() {
+      setOpenCancelSubscriptionDialog(false);
+      void session.update({
+        cancelledSubscription: true,
+      } satisfies UpdateSessionSubscription);
+    },
+  });
 
   return (
     <React.Fragment>
-      <Dialog
-        open={openCancelSubscriptionDialog}
-        onOpenChange={setOpenCancelSubscriptionDialog}
-      >
+      <Dialog open={openCancelSubscriptionDialog} onOpenChange={setOpenCancelSubscriptionDialog}>
         <Dialog.Content>
           <Dialog.Header>
             <Dialog.Title>Cancelar Suscripción</Dialog.Title>
@@ -59,7 +53,7 @@ export const SubscriptionsDialog: React.FC<Props> = ({
           </Dialog.Header>
 
           {cancelSubscriptionMutation.isError && (
-            <p className="text-center text-destructive">
+            <p className="text-destructive text-center">
               {cancelSubscriptionMutation.error?.message ??
                 "Ocurrió un error al cancelar la suscripción."}
             </p>
@@ -75,8 +69,7 @@ export const SubscriptionsDialog: React.FC<Props> = ({
                 });
               }}
               loading={cancelSubscriptionMutation.isLoading}
-              variant="destructive"
-            >
+              variant="destructive">
               Cancelar Suscripción
             </Button>
 
@@ -84,8 +77,7 @@ export const SubscriptionsDialog: React.FC<Props> = ({
               onClick={() => {
                 setOpenCancelSubscriptionDialog(false);
               }}
-              variant="secondary"
-            >
+              variant="secondary">
               Cancelar
             </Button>
           </div>
@@ -97,12 +89,8 @@ export const SubscriptionsDialog: React.FC<Props> = ({
           <LucideIcons.CrownIcon className="mx-auto h-12 w-12 text-yellow-600 dark:text-yellow-500" />
 
           <Dialog.Header>
-            <Dialog.Title
-              className={cn(reachedFreeLimit && "text-warning-text")}
-            >
-              {reachedFreeLimit
-                ? "¡Ups! Límite alcanzado"
-                : "Haz más con Premium"}
+            <Dialog.Title className={cn(reachedFreeLimit && "text-warning-text")}>
+              {reachedFreeLimit ? "¡Ups! Límite alcanzado" : "Haz más con Premium"}
             </Dialog.Title>
 
             <Dialog.Description>
@@ -114,27 +102,27 @@ export const SubscriptionsDialog: React.FC<Props> = ({
 
           <ul className="flex flex-col gap-2">
             <li className="flex items-center gap-2.5">
-              <LucideIcons.CheckIcon className="h-5 w-5 rounded-full bg-green-600 stroke-[4] p-1 text-success-foreground" />
+              <LucideIcons.CheckIcon className="text-success-foreground h-5 w-5 rounded-full bg-green-600 stroke-[4] p-1" />
               <span>Crea Deudas sin Límites</span>
             </li>
 
             <li className="flex items-center gap-2.5">
-              <LucideIcons.CheckIcon className="h-5 w-5 rounded-full bg-green-600 stroke-[4] p-1 text-success-foreground" />
+              <LucideIcons.CheckIcon className="text-success-foreground h-5 w-5 rounded-full bg-green-600 stroke-[4] p-1" />
               <span>Únete a Deudas Ilimitadas</span>
             </li>
 
             <li className="flex items-center gap-2.5">
-              <LucideIcons.CheckIcon className="h-5 w-5 rounded-full bg-green-600 stroke-[4] p-1 text-success-foreground" />
+              <LucideIcons.CheckIcon className="text-success-foreground h-5 w-5 rounded-full bg-green-600 stroke-[4] p-1" />
               <span>Acceso Prioritario a Nuevas Funcionalidades</span>
             </li>
           </ul>
 
           <div className="flex flex-col gap-1">
-            <p className="mt-2 text-center text-lg font-medium text-success-text">
+            <p className="text-success-text mt-2 text-center text-lg font-medium">
               Solo $5.900 COP / mes
             </p>
 
-            <p className="text-center text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-center text-sm">
               Pago mensual. Cancela cuando quieras.
             </p>
           </div>
@@ -155,22 +143,18 @@ export const SubscriptionsDialog: React.FC<Props> = ({
               );
             }}
             loading={subscribeMutation.isLoading}
-            disabled={
-              isSubscriptionCancelledAndActive || isSubscriptionActiveOrPending
-            }
-            className="h-12 w-full"
-          >
+            disabled={isSubscriptionCancelledAndActive || isSubscriptionActiveOrPending}
+            className="h-12 w-full">
             <span>Suscribirme Ahora</span>
           </Button>
 
           {isSubscriptionActiveOrPending && (
             <button
               type="button"
-              className="mt-1.5 text-xs text-muted-foreground underline"
+              className="text-muted-foreground mt-1.5 text-xs underline"
               onClick={() => {
                 setOpenCancelSubscriptionDialog(true);
-              }}
-            >
+              }}>
               Cancelar Suscripción
             </button>
           )}
@@ -178,11 +162,10 @@ export const SubscriptionsDialog: React.FC<Props> = ({
           {isSubscriptionCancelledAndActive && (
             <div className="flex flex-col gap-1">
               <p className="mt-2 text-center text-sm">
-                * Puedes volver a suscribirte una vez finalice tu periodo
-                actual.
+                * Puedes volver a suscribirte una vez finalice tu periodo actual.
               </p>
 
-              <p className="text-center text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-center text-sm">
                 Tu suscripción finaliza:{" "}
                 {DateTime.fromISO(
                   session.data?.user.subscription?.nextDueDate ?? ""
@@ -191,13 +174,9 @@ export const SubscriptionsDialog: React.FC<Props> = ({
             </div>
           )}
 
-          {(!isSubscriptionCancelledAndActive ||
-            !isSubscriptionActiveOrPending) && (
+          {(!isSubscriptionCancelledAndActive || !isSubscriptionActiveOrPending) && (
             <Dialog.Trigger asChild>
-              <button
-                type="button"
-                className="mt-1.5 self-center text-xs text-muted-foreground"
-              >
+              <button type="button" className="text-muted-foreground mt-1.5 self-center text-xs">
                 Saltar por ahora
               </button>
             </Dialog.Trigger>

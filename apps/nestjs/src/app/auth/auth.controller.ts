@@ -1,5 +1,5 @@
 import { FirebaseAuthGuard, type ReqWithUser } from "@api/auth/guards/firebase-auth.guard";
-import { Controller, Get, HttpStatus, Logger, Req, Res, UseGuards } from "@nestjs/common";
+import { Controller, HttpStatus, Logger, Req, Res, UseGuards } from "@nestjs/common";
 import { type Response } from "express";
 import { AuthService } from "@api/auth/auth.service";
 import { tsRestHandler, TsRestHandler } from "@ts-rest/nest";
@@ -41,7 +41,7 @@ export class AuthController {
             },
           };
         }
-        this.logger.error(`Login Process: ${error}`);
+        this.logger.error(`Login: ${error}`);
         return {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           body: {
@@ -72,7 +72,7 @@ export class AuthController {
           body: userInfo,
         };
       } catch (error: unknown) {
-        this.logger.error(`Me Process: ${error}`);
+        this.logger.error(`Me: ${error}`);
         return {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           body: {
@@ -83,9 +83,28 @@ export class AuthController {
     });
   }
 
-  @Get("logout")
-  public async logout(@Res() res: Response): Promise<Response> {
-    res.clearCookie("session");
-    return res.status(HttpStatus.OK).json({ message: "Logged out" });
+  @TsRestHandler(contracts.auth.logout)
+  @UseGuards(FirebaseAuthGuard)
+  public async logout(@Res({ passthrough: true }) res: Response, @Req() req: ReqWithUser) {
+    return tsRestHandler(contracts.auth.logout, async () => {
+      try {
+        await this.authService.revokeToken(req.cookies.session);
+        res.clearCookie("session");
+        return {
+          status: HttpStatus.OK,
+          body: {
+            message: "Logout successful",
+          },
+        };
+      } catch (error: unknown) {
+        this.logger.error(`Logout: ${error}`);
+        return {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          body: {
+            message: "Internal server error",
+          },
+        };
+      }
+    });
   }
 }

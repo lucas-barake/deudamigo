@@ -24,9 +24,9 @@ const MainLayout: FC<LayoutProps> = ({ className, title, content, ...rest }) => 
 
         <div className="flex items-center gap-2">
           {/*<SubscriptionButton />*/}
-          {/*<ProfileMenu />*/}
+          <ProfileMenu />
           {/*<NotificationBell />*/}
-          {/*<ThemeSwitch />*/}
+          <ThemeSwitch />
         </div>
       </header>
 
