@@ -1,6 +1,6 @@
 import React from "react";
 import { type ZodType } from "zod";
-import { useRouter } from "next/router";
+import { useCustomRouter } from "$/lib/hooks/use-custom-router";
 
 type Args<T> = {
   validationSchema: ZodType<T>;
@@ -10,12 +10,10 @@ type Args<T> = {
 export function useQueryState<T extends object>(
   config: Args<T>
 ): [T, React.Dispatch<React.SetStateAction<T>>] {
-  const router = useRouter();
+  const router = useCustomRouter();
 
   function convertToQueryParams(state: T): string {
-    return new URLSearchParams(
-      state as unknown as Record<string, string>
-    ).toString();
+    return new URLSearchParams(state as unknown as Record<string, string>).toString();
   }
 
   function convertToState(query: Record<string, unknown>): T {
@@ -28,25 +26,18 @@ export function useQueryState<T extends object>(
     return state as T;
   }
 
-  const parsedState = config.validationSchema.safeParse(
-    convertToState(router.query)
-  );
-  const initialState = parsedState.success
-    ? parsedState.data
-    : config.defaultValues;
+  const parsedState = config.validationSchema.safeParse(convertToState(router.query));
+  const initialState = parsedState.success ? parsedState.data : config.defaultValues;
   const [state, setState] = React.useState<T>(initialState);
 
   function setQueryState(newState: React.SetStateAction<T>): void {
     const nextState =
-      typeof newState === "function"
-        ? (newState as (prevState: T) => T)(state)
-        : newState;
+      typeof newState === "function" ? (newState as (prevState: T) => T)(state) : newState;
 
     const parsedNextState = config.validationSchema.safeParse(nextState);
     if (parsedNextState.success) {
       setState(parsedNextState.data);
-      void router.push({
-        pathname: router.pathname,
+      void router.push("", {
         query: convertToQueryParams(parsedNextState.data),
       });
     }

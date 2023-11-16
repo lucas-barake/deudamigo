@@ -10,6 +10,7 @@ export * from "./lib/debt-invites";
 export * from "./lib/auth.contract";
 export * from "./lib/debts";
 export * from "./lib/debt-payments";
+export * from "./lib/_shared";
 
 export const contracts = c.router({
   debtInvites: debtInvitesContract,

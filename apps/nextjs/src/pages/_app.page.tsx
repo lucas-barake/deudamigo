@@ -3,8 +3,11 @@ import React, { type ReactElement, type ReactNode } from "react";
 import { type NextPage } from "next";
 import { ThemeProvider } from "next-themes";
 import "$/styles/globals.css";
-import { StyledToaster } from "src/components/ui/styled-toaster";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { StyledToaster } from "$/components/ui/styled-toaster";
+import NextTopLoader from "nextjs-toploader";
+import { usePathname, useSearchParams } from "next/navigation";
+import NProgress from "nprogress";
+import { api } from "$/lib/utils/api";
 
 export type NextPageWithLayout<P = Record<string, unknown>, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode;
@@ -15,17 +18,22 @@ type AppPropsWithLayout = AppProps & {
   pageProps: Record<string, unknown>;
 };
 
-export const queryClient = new QueryClient();
-
 const MyApp = ({ Component, pageProps: { ...pageProps } }: AppPropsWithLayout): JSX.Element => {
   const getLayout = Component.getLayout ?? ((page) => page);
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  React.useEffect(() => {
+    NProgress.done();
+  }, [pathname, searchParams]);
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <React.Fragment>
+      <NextTopLoader showSpinner={false} />
       <StyledToaster />
       <ThemeProvider attribute="class">{getLayout(<Component {...pageProps} />)}</ThemeProvider>
-    </QueryClientProvider>
+    </React.Fragment>
   );
 };
 
-export default MyApp;
+export default api.withTRPC(MyApp);

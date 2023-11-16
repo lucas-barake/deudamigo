@@ -1,14 +1,19 @@
 import { Injectable } from "@nestjs/common";
 import {
+  contracts,
   type CreateDebtInput,
+  DEBTS_QUERY_PAGINATION_LIMIT,
+  type GetDebtBorrowersAndPendingBorrowersInput,
+  type GetDebtBorrowersAndPendingBorrowersResult,
   type GetLenderDebtsInput,
   type GetPartnersResult,
   type GetUserDebts,
   getUserDebtsSelect,
 } from "@deudamigo/ts-rest";
 import { PaymentStatus, prisma, type Prisma } from "@deudamigo/database";
-import { type ReqWithUser } from "@api/auth/guards/firebase-auth.guard";
+import { type ReqWithUser } from "@api/app/auth/guards/firebase-auth.guard";
 import { DateTime } from "luxon";
+import { TsRestException } from "@ts-rest/nest";
 
 @Injectable()
 export class DebtsService {
@@ -42,7 +47,7 @@ export class DebtsService {
         })),
       });
 
-      return newDebt;
+      return newDebt as unknown as GetUserDebts;
     });
   }
 
@@ -98,33 +103,33 @@ export class DebtsService {
         image: borrower.user.image,
         name: borrower.user.name,
       }));
-    } else {
-      const lenders = await prisma.debt.findMany({
-        where: {
-          borrowers: {
-            some: {
-              userId: user.id,
-            },
-          },
-        },
-        select: {
-          lender: {
-            select: {
-              email: true,
-              image: true,
-              name: true,
-            },
-          },
-        },
-        distinct: ["lenderId"],
-      });
-
-      return lenders.map((debt) => ({
-        email: debt.lender.email,
-        image: debt.lender.image,
-        name: debt.lender.name,
-      }));
     }
+
+    const lenders = await prisma.debt.findMany({
+      where: {
+        borrowers: {
+          some: {
+            userId: user.id,
+          },
+        },
+      },
+      select: {
+        lender: {
+          select: {
+            email: true,
+            image: true,
+            name: true,
+          },
+        },
+      },
+      distinct: ["lenderId"],
+    });
+
+    return lenders.map((debt) => ({
+      email: debt.lender.email,
+      image: debt.lender.image,
+      name: debt.lender.name,
+    }));
   }
 
   public async getLenderDebts(
@@ -177,7 +182,7 @@ export class DebtsService {
             createdAt: query.sort,
           },
         ],
-        take: 8,
+        take: DEBTS_QUERY_PAGINATION_LIMIT,
         skip: query.skip,
         select: {
           ...getUserDebtsSelect,
@@ -189,7 +194,7 @@ export class DebtsService {
     ]);
 
     return {
-      debts,
+      debts: debts as unknown as GetUserDebts[],
       count,
     };
   }
@@ -241,7 +246,7 @@ export class DebtsService {
             createdAt: query.sort,
           },
         ],
-        take: 8,
+        take: DEBTS_QUERY_PAGINATION_LIMIT,
         skip: query.skip,
         select: {
           ...getUserDebtsSelect,
@@ -253,8 +258,56 @@ export class DebtsService {
     ]);
 
     return {
-      debts,
+      debts: debts as unknown as GetUserDebts[],
       count,
+    };
+  }
+
+  public async getDebtBorrowersAndPendingBorrowers(
+    input: GetDebtBorrowersAndPendingBorrowersInput,
+    user: ReqWithUser["user"]
+  ): Promise<GetDebtBorrowersAndPendingBorrowersResult> {
+    const debt = await prisma.debt.findFirst({
+      where: {
+        id: input.debtId,
+        lenderId: user.id,
+      },
+      select: {
+        id: true,
+        currency: true,
+        borrowers: {
+          select: {
+            balance: true,
+            user: {
+              select: {
+                id: true,
+                email: true,
+                image: true,
+                name: true,
+              },
+            },
+          },
+        },
+        pendingInvites: {
+          select: {
+            inviteeEmail: true,
+          },
+        },
+      },
+    });
+
+    if (!debt) {
+      throw new TsRestException(contracts.debts.getDebtBorrowersAndPendingBorrowers, {
+        status: 404,
+        body: {
+          message: "Debt not found",
+        },
+      });
+    }
+
+    return {
+      borrowers: debt.borrowers,
+      pendingBorrowers: debt.pendingInvites,
     };
   }
 }

@@ -1,8 +1,8 @@
 import { api } from "$/lib/configs/react-query-client";
 import { type AuthStore, useAuthStore } from "$/lib/stores/use-auth-store";
-import { useRouter } from "next/router";
 import { Pages } from "$/lib/enums/pages";
 import { TimeInMs } from "$/lib/enums/time";
+import { useCustomRouter } from "$/lib/hooks/use-custom-router";
 
 type UseSessionReturn = {
   user: AuthStore["user"];
@@ -18,7 +18,7 @@ type UseSessionArgs =
 
 export function useSession(args: UseSessionArgs = {}): UseSessionReturn {
   const auth = useAuthStore();
-  const router = useRouter();
+  const router = useCustomRouter();
 
   const signOutMutation = api.auth.logout.useMutation({
     onSuccess() {
@@ -53,7 +53,7 @@ export function useSession(args: UseSessionArgs = {}): UseSessionReturn {
     user: auth.user,
     status: auth.status,
     refresh() {
-      meQuery.refetch();
+      void meQuery.refetch();
     },
     async signOut() {
       await signOutMutation.mutateAsync({

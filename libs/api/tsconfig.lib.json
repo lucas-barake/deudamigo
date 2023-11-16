@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../dist/out-tsc",
+    "declaration": true,
+    "types": ["node"],
+
+    "baseUrl": ".",
+    "paths": {
+      "$/*": ["src/*"],
+      "@deudamigo/database": ["../../libs/database/src/index.ts"],
+      "@deudamigo/redis": ["../../libs/redis/src/index.ts"],
+      "@deudamigo/utils": ["../../libs/utils/src/index.ts"],
+      "@deudamigo/api": ["../../libs/api/src/index.ts"]
+    }
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["jest.config.ts", "src/**/*.spec.ts", "src/**/*.test.ts"]
+}

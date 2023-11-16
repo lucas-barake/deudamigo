@@ -5,7 +5,7 @@ export class AppController {
   constructor() {}
 
   @Get("/healthcheck")
-  getData() {
+  public getData() {
     return { message: "OK" };
   }
 }

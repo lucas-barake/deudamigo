@@ -1,8 +1,9 @@
-import { admin } from "@api/auth/firebase-admin.module";
+import { admin } from "@api/app/auth/firebase-admin.module";
 import { Injectable, Logger } from "@nestjs/common";
 import { type DecodedIdToken } from "firebase-admin/lib/auth/token-verifier";
 import { prisma, type Prisma } from "@deudamigo/database";
 import { type User } from "@deudamigo/ts-rest";
+import { TimeInMs } from "@deudamigo/utils";
 
 const userSelect = {
   id: true,
@@ -37,6 +38,15 @@ export class AuthService {
     }
   }
 
+  public async createSessionCookie(token: string): Promise<{
+    sessionCookie: string;
+    expiresIn: number;
+  }> {
+    const expiresIn = TimeInMs.FourteenDays;
+    const sessionCookie = await admin.auth().createSessionCookie(token, { expiresIn });
+    return { sessionCookie, expiresIn };
+  }
+
   public async verifyAndUpsertUser(token: string): Promise<{
     decodedToken: DecodedIdToken;
     userInfo: User;
@@ -61,15 +71,6 @@ export class AuthService {
     });
 
     return { decodedToken, userInfo };
-  }
-
-  public async createSessionCookie(token: string): Promise<{
-    sessionCookie: string;
-    expiresIn: number;
-  }> {
-    const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 days
-    const sessionCookie = await admin.auth().createSessionCookie(token, { expiresIn });
-    return { sessionCookie, expiresIn };
   }
 
   public async getUserInfo(email: string): Promise<User | null> {

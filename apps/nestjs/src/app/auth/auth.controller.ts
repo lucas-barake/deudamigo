@@ -1,7 +1,7 @@
-import { FirebaseAuthGuard, type ReqWithUser } from "@api/auth/guards/firebase-auth.guard";
+import { FirebaseAuthGuard, type ReqWithUser } from "@api/app/auth/guards/firebase-auth.guard";
 import { Controller, HttpStatus, Logger, Req, Res, UseGuards } from "@nestjs/common";
 import { type Response } from "express";
-import { AuthService } from "@api/auth/auth.service";
+import { AuthService } from "@api/app/auth/auth.service";
 import { tsRestHandler, TsRestHandler } from "@ts-rest/nest";
 import { contracts } from "@deudamigo/ts-rest";
 

@@ -14,9 +14,11 @@
     "esModuleInterop": true,
     "baseUrl": ".",
     "paths": {
-      "@api/*": ["./src/app/*"],
+      "@api/*": ["./src/*"],
       "@deudamigo/ts-rest": ["../../libs/ts-rest/src/index.ts"],
-      "@deudamigo/database": ["../../libs/database/src/index.ts"]
+      "@deudamigo/database": ["../../libs/database/src/index.ts"],
+      "@deudamigo/redis": ["../../libs/redis/src/index.ts"],
+      "@deudamigo/utils": ["../../libs/utils/src/index.ts"]
     }
   }
 }

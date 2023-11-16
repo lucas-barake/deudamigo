@@ -1,5 +1,5 @@
 import { type GetUserDebts } from "./types";
-import { type Debt, type User } from "@deudamigo/database";
+import { type Debt, type PendingInvite, type User } from "@deudamigo/database";
 
 export type CreateDebtResult = GetUserDebts;
 
@@ -21,4 +21,19 @@ export type GetLenderDebtsResult = {
 export type GetBorrowerDebtsResult = {
   debts: GetUserDebts[];
   count: number;
+};
+
+export type GetDebtBorrowersAndPendingBorrowersResult = {
+  borrowers: Array<{
+    user: {
+      name: User["name"];
+      id: User["id"];
+      email: User["email"];
+      image: User["image"];
+    };
+    balance: Debt["amount"];
+  }>;
+  pendingBorrowers: Array<{
+    inviteeEmail: PendingInvite["inviteeEmail"];
+  }>;
 };

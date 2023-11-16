@@ -5,7 +5,7 @@ import {
   type SendDebtInviteResult,
 } from "@deudamigo/ts-rest";
 import { Injectable } from "@nestjs/common";
-import { type ReqWithUser } from "@api/auth/guards/firebase-auth.guard";
+import { type ReqWithUser } from "@api/app/auth/guards/firebase-auth.guard";
 import { prisma } from "@deudamigo/database";
 
 @Injectable()

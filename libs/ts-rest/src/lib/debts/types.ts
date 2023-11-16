@@ -1,4 +1,5 @@
 import { type Prisma } from "@deudamigo/database";
+import { type DatesToStrings } from "@deudamigo/utils";
 
 export const getUserDebtsSelect = {
   id: true,
@@ -40,6 +41,8 @@ export const getUserDebtsSelect = {
     },
   },
 } satisfies Prisma.DebtSelect;
-export type GetUserDebts = Prisma.DebtGetPayload<{
-  select: typeof getUserDebtsSelect;
-}>;
+export type GetUserDebts = DatesToStrings<
+  Prisma.DebtGetPayload<{
+    select: typeof getUserDebtsSelect;
+  }>
+>;

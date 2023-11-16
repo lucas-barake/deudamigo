@@ -1,7 +1,7 @@
 import { Controller, HttpStatus, Logger, Req, UseGuards } from "@nestjs/common";
-import { FirebaseAuthGuard, ReqWithUser } from "@api/auth/guards/firebase-auth.guard";
-import { DebtsService } from "@api/debts/debts.service";
-import { tsRestHandler, TsRestHandler } from "@ts-rest/nest";
+import { FirebaseAuthGuard, ReqWithUser } from "@api/app/auth/guards/firebase-auth.guard";
+import { DebtsService } from "@api/app/debts/debts.service";
+import { TsRestException, tsRestHandler, TsRestHandler } from "@ts-rest/nest";
 import { contracts } from "@deudamigo/ts-rest";
 import { Prisma } from "@deudamigo/database";
 
@@ -123,5 +123,32 @@ export class DebtsController {
         };
       }
     });
+  }
+
+  @TsRestHandler(contracts.debts.getDebtBorrowersAndPendingBorrowers)
+  public async getDebtBorrowersAndPendingBorrowers(@Req() req: ReqWithUser) {
+    return tsRestHandler(
+      contracts.debts.getDebtBorrowersAndPendingBorrowers,
+      async ({ params }) => {
+        try {
+          const borrowers = await this.service.getDebtBorrowersAndPendingBorrowers(
+            params,
+            req.user
+          );
+
+          return {
+            status: HttpStatus.OK,
+            body: borrowers,
+          };
+        } catch (error) {
+          if (error instanceof TsRestException) throw error;
+          this.logger.error(`Error getting debt borrowers and pending borrowers: ${error}`);
+          return {
+            status: HttpStatus.INTERNAL_SERVER_ERROR,
+            body: { message: "Something went wrong" },
+          };
+        }
+      }
+    );
   }
 }

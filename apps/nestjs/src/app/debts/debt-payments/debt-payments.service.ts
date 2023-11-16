@@ -13,7 +13,7 @@ import {
   type RemovePaymentInput,
   type RemovePaymentResult,
 } from "@deudamigo/ts-rest";
-import { type ReqWithUser } from "@api/auth/guards/firebase-auth.guard";
+import { type ReqWithUser } from "@api/app/auth/guards/firebase-auth.guard";
 import { TsRestException } from "@ts-rest/nest";
 
 @Injectable()

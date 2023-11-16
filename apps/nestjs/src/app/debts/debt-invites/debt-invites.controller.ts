@@ -1,8 +1,8 @@
 import { Controller, Logger, Req, UseGuards } from "@nestjs/common";
-import { DebtInvitesService } from "@api/debts/debt-invites/debt-invites.service";
+import { DebtInvitesService } from "@api/app/debts/debt-invites/debt-invites.service";
 import { TsRestHandler, tsRestHandler } from "@ts-rest/nest";
 import { contracts } from "@deudamigo/ts-rest";
-import { FirebaseAuthGuard, ReqWithUser } from "@api/auth/guards/firebase-auth.guard";
+import { FirebaseAuthGuard, ReqWithUser } from "@api/app/auth/guards/firebase-auth.guard";
 import { Prisma } from "@deudamigo/database";
 
 @Controller()

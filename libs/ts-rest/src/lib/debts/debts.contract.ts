@@ -1,10 +1,16 @@
 import { initContract } from "@ts-rest/core";
-import { createDebtInput, getBorrowerDebtsInput, getLenderDebtsInput } from "./input";
+import {
+  createDebtInput,
+  getBorrowerDebtsInput,
+  getDebtBorrowersAndPendingBorrowersInput,
+  getLenderDebtsInput,
+} from "./input";
 import { z } from "zod";
 import {
   type ArchiveDebtResult,
   type CreateDebtResult,
   type GetBorrowerDebtsResult,
+  type GetDebtBorrowersAndPendingBorrowersResult,
   type GetLenderDebtsResult,
   type GetPartnersResult,
 } from "./output";
@@ -30,7 +36,7 @@ export const debtsContract = c.router(
       pathParams: z.object({
         id: z.string().uuid(),
       }),
-      body: c.type<object>(),
+      body: c.type<null>(),
       responses: {
         200: c.type<ArchiveDebtResult>(),
         400: c.type<{ message: string }>(),
@@ -68,6 +74,16 @@ export const debtsContract = c.router(
       responses: {
         200: c.type<GetBorrowerDebtsResult>(),
         400: c.type<{ message: string }>(),
+        500: c.type<{ message: string }>(),
+      },
+    },
+    getDebtBorrowersAndPendingBorrowers: {
+      method: "GET",
+      path: "/:debtId/borrowers",
+      pathParams: getDebtBorrowersAndPendingBorrowersInput,
+      responses: {
+        200: c.type<GetDebtBorrowersAndPendingBorrowersResult>(),
+        404: c.type<{ message: string }>(),
         500: c.type<{ message: string }>(),
       },
     },

@@ -1,25 +1,14 @@
+/* eslint-disable no-restricted-imports */
 import { type DebtRecurringFrequency } from "@deudamigo/database";
 import { z } from "zod";
 import { DateTime } from "luxon";
+import { CURRENCIES } from "../_shared";
 
-export const CURRENCIES = [
-  "COP",
-  "USD",
-  "MXN",
-  "EUR",
-  "UYU",
-  "ARS",
-  "CLP",
-  "BRL",
-  "PYG",
-  "PEN",
-  "GBP",
-] as const;
-export type Currency = (typeof CURRENCIES)[number] | string;
 export const DEBT_MAX_BORROWERS = 4;
 export const DEBT_MAX_WEEKLY_DURATION = 8;
 export const DEBT_MAX_BIWEEKLY_DURATION = 6;
 export const DEBT_MAX_MONTHLY_DURATION = 12;
+export const DEBTS_QUERY_PAGINATION_LIMIT = 8;
 
 export const createDebtRecurrentOptions = [
   {
@@ -189,17 +178,22 @@ export const defaultCreateDebtInput = {
   },
 } satisfies CreateDebtInput;
 
-export const paginationSkipSchema = z.number().int().gte(0);
+export const paginationSkipSchema = z.number({ coerce: true }).int().gte(0);
+const partnerEmail = z
+  .literal("null")
+  .or(z.string().email())
+  .nullable()
+  .transform((value) => (value === "null" ? null : value));
 
 export const getBorrowerDebtsInput = z.object({
   skip: paginationSkipSchema,
   status: z.union([z.literal("active"), z.literal("archived"), z.literal("all")]),
   sort: z.union([z.literal("asc"), z.literal("desc")]),
-  partnerEmail: z.string().email().nullable(),
+  partnerEmail,
 });
-export type GetBorrowerDebts = z.infer<typeof getBorrowerDebtsInput>;
+export type GetBorrowerDebtsInput = z.infer<typeof getBorrowerDebtsInput>;
 
-export const borrowerStatusOptions = [
+export const borrowerDebtsStatusOptions = [
   {
     value: "active",
     label: "Activas",
@@ -213,7 +207,7 @@ export const borrowerStatusOptions = [
     label: "Todas",
   },
 ] as const satisfies ReadonlyArray<{
-  value: GetBorrowerDebts["status"];
+  value: GetBorrowerDebtsInput["status"];
   label: string;
 }>;
 
@@ -226,11 +220,11 @@ export const getLenderDebtsInput = z.object({
     z.literal("pending-confirmation"),
   ]),
   sort: z.union([z.literal("asc"), z.literal("desc")]),
-  partnerEmail: z.string().email().nullable(),
+  partnerEmail,
 });
 export type GetLenderDebtsInput = z.infer<typeof getLenderDebtsInput>;
 
-export const statusOptions = [
+export const lenderDebtsStatusOptions = [
   {
     value: "active",
     label: "Activas",
@@ -251,3 +245,10 @@ export const statusOptions = [
   value: GetLenderDebtsInput["status"];
   label: string;
 }>;
+
+export const getDebtBorrowersAndPendingBorrowersInput = z.object({
+  debtId: z.string().uuid(),
+});
+export type GetDebtBorrowersAndPendingBorrowersInput = z.infer<
+  typeof getDebtBorrowersAndPendingBorrowersInput
+>;
