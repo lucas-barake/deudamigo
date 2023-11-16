@@ -131,7 +131,6 @@
     "react/no-array-index-key": "warn",
     "react/self-closing-comp": "error",
     // Tailwind
-    "tailwindcss/classnames-order": "warn",
     "tailwindcss/enforces-shorthand": "error",
     "tailwindcss/no-contradicting-classname": "error"
   }

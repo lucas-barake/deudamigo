@@ -1,11 +1,5 @@
 import { initializeApp, getApp, getApps } from "firebase/app";
-import {
-  type UserCredential,
-  getAuth,
-  signInWithRedirect,
-  GoogleAuthProvider,
-  signInWithPopup,
-} from "firebase/auth";
+import { type UserCredential, getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,

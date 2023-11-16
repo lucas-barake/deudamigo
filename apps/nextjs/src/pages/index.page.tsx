@@ -6,22 +6,22 @@ import { CustomHead } from "$/components/layouts/custom-head";
 import React from "react";
 import Link from "next/link";
 import { signInWithGoogle } from "$/lib/configs/firebase-config";
-import { api } from "$/lib/configs/react-query-client";
 import { useSession } from "$/lib/hooks/use-session/use-session";
 import { useAuthStore } from "$/lib/stores/use-auth-store";
-import { useRouter } from "next/router";
+import { useCustomRouter } from "$/lib/hooks/use-custom-router";
+import { api } from "$/lib/utils/api";
 
 const Home: NextPageWithLayout = () => {
   const authStore = useAuthStore();
   const session = useSession({
     redirectOnAuth: true,
   });
-  const router = useRouter();
+  const router = useCustomRouter();
   const loginMutation = api.auth.login.useMutation({
     onSuccess(data) {
       authStore.set({
         status: "authenticated",
-        user: data.body,
+        user: data,
       });
       void router.push(Pages.DASHBOARD);
     },
@@ -30,8 +30,8 @@ const Home: NextPageWithLayout = () => {
   async function handleSignIn(): Promise<void> {
     try {
       const result = await signInWithGoogle();
-      const token = await result.user.getIdToken();
-      await loginMutation.mutateAsync({ headers: { authorization: `Bearer ${token}` } });
+      const accessToken = await result.user.getIdToken();
+      await loginMutation.mutateAsync({ accessToken });
     } catch (error: unknown) {
       console.error(error);
     }
@@ -56,7 +56,11 @@ const Home: NextPageWithLayout = () => {
               onClick={() => {
                 void handleSignIn();
               }}
-              loading={loginMutation.isLoading || session.status === "loading"}
+              loading={
+                loginMutation.isLoading ||
+                session.status === "loading" ||
+                session.status === "authenticated"
+              }
               size="lg">
               Empezar ahora
             </Button>

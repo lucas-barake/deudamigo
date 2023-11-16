@@ -1,8 +1,9 @@
-import { api } from "$/lib/configs/react-query-client";
 import { type AuthStore, useAuthStore } from "$/lib/stores/use-auth-store";
-import { useRouter } from "next/router";
 import { Pages } from "$/lib/enums/pages";
 import { TimeInMs } from "$/lib/enums/time";
+import { useCustomRouter } from "$/lib/hooks/use-custom-router";
+import { api } from "$/lib/utils/api";
+import { TRPC_ERROR_CODES_BY_KEY } from "@trpc/server/rpc";
 
 type UseSessionReturn = {
   user: AuthStore["user"];
@@ -18,7 +19,7 @@ type UseSessionArgs =
 
 export function useSession(args: UseSessionArgs = {}): UseSessionReturn {
   const auth = useAuthStore();
-  const router = useRouter();
+  const router = useCustomRouter();
 
   const signOutMutation = api.auth.logout.useMutation({
     onSuccess() {
@@ -26,23 +27,23 @@ export function useSession(args: UseSessionArgs = {}): UseSessionReturn {
       void router.push(Pages.HOME);
     },
   });
-  const meQuery = api.auth.me.useQuery(["me"], api.auth.me.query, {
+  const meQuery = api.auth.me.useQuery(undefined, {
     cacheTime: TimeInMs.FortyFiveMinutes,
     staleTime: TimeInMs.FortyFiveMinutes,
     enabled: auth.user === null,
     refetchOnWindowFocus: false,
     retry(failureCount, error) {
-      return error.status !== 403 && failureCount < 3;
+      return error.shape?.code !== TRPC_ERROR_CODES_BY_KEY.UNAUTHORIZED && failureCount < 3;
     },
     onSuccess(data) {
-      auth.set({ user: data.body, status: "authenticated" });
+      auth.set({ user: data, status: "authenticated" });
 
       if (args.redirectOnAuth === true) {
         void router.push(Pages.DASHBOARD);
       }
     },
     onError(error) {
-      if (error.status === 403) {
+      if (error.shape?.code === TRPC_ERROR_CODES_BY_KEY.UNAUTHORIZED) {
         auth.clear();
         void router.push(Pages.HOME);
       }
@@ -53,12 +54,10 @@ export function useSession(args: UseSessionArgs = {}): UseSessionReturn {
     user: auth.user,
     status: auth.status,
     refresh() {
-      meQuery.refetch();
+      void meQuery.refetch();
     },
     async signOut() {
-      await signOutMutation.mutateAsync({
-        body: {},
-      });
+      await signOutMutation.mutateAsync();
     },
   };
 }

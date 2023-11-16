@@ -4,14 +4,14 @@ import { Check, EyeIcon, X } from "lucide-react";
 import { Popover } from "$/components/ui/popover";
 import { Button } from "$/components/ui/button";
 import { Separator } from "$/components/ui/separator";
-import { useRouter } from "next/router";
+import { useCustomRouter } from "$/lib/hooks/use-custom-router";
 import { Pages } from "$/lib/enums/pages";
 import { SubscriptionsDialog } from "$/components/common/subscriptions-dialog";
 
 type Props = {};
 
 const PendingInviteRow: React.FC<Props> = ({}) => {
-  const router = useRouter();
+  const router = useCustomRouter();
   const [showSubscribeDialog, setShowSubscribeDialog] = React.useState(false);
 
   return (
@@ -30,7 +30,7 @@ const PendingInviteRow: React.FC<Props> = ({}) => {
             <Popover.Trigger asChild>
               <Button variant="outline" size="sm" className="self-start">
                 <EyeIcon className="mr-2 h-4 w-4" />
-                <span className="max-w-[100px] truncate xs:max-w-[175px]">Debt Name</span>
+                <span className="xs:max-w-[175px] max-w-[100px] truncate">Debt Name</span>
               </Button>
             </Popover.Trigger>
 
@@ -47,7 +47,7 @@ const PendingInviteRow: React.FC<Props> = ({}) => {
         <div className="flex items-center gap-3">
           <button
             type="button"
-            className="rounded-full border-2 border-success-text p-0.5 text-success-text hover:bg-success/10"
+            className="border-success-text text-success-text hover:bg-success/10 rounded-full border-2 p-0.5"
             onClick={() => {
               // if (freePlanLimit.reachedMonthlyLimit) {
               //   setShowSubscribeDialog(true);
@@ -77,7 +77,7 @@ const PendingInviteRow: React.FC<Props> = ({}) => {
 
           <button
             type="button"
-            className="rounded-full border-2 border-destructive p-0.5 text-destructive hover:bg-destructive/10"
+            className="border-destructive text-destructive hover:bg-destructive/10 rounded-full border-2 p-0.5"
             onClick={() => {
               // void toast.promise(
               //   declineMutation.mutateAsync({

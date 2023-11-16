@@ -21,8 +21,11 @@
     "baseUrl": ".",
     "paths": {
       "$/*": ["src/*"],
-      "@deudamigo/ts-rest": ["../../libs/ts-rest/src/index.ts"],
-      "@deudamigo/database": ["../../libs/database/src/index.ts"]
+      "@deudamigo/database": ["../../libs/database/src/index.ts"],
+      "@deudamigo/redis": ["../../libs/redis/src/index.ts"],
+      "@deudamigo/utils": ["../../libs/utils/src/index.ts"],
+      "@deudamigo/api": ["../../libs/api/src/index.ts"],
+      "@deudamigo/api-contracts": ["../../libs/api-contracts/src/index.ts"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "next-env.d.ts"],

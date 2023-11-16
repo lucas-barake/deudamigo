@@ -15,8 +15,13 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@api/*": ["libs/api/src/*"],
+      "@deudamigo/api": ["libs/api/src/index.ts"],
+      "@deudamigo/api-contracts": ["libs/api-contracts/src/index.ts"],
       "@deudamigo/database": ["libs/database/src/index.ts"],
-      "@deudamigo/ts-rest": ["libs/ts-rest/src/index.ts"]
+      "@deudamigo/redis": ["libs/redis/src/index.ts"],
+      "@deudamigo/ts-rest": ["libs/ts-rest/src/index.ts"],
+      "@deudamigo/utils": ["libs/utils/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

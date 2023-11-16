@@ -53,7 +53,7 @@ model Debt {
 
 enum PaymentStatus {
   PAID
-  MISSED // for recurrent debts and non-recurrent debts with due date
+  MISSED // for recurrent recurrent-debts and non-recurrent recurrent-debts with due date
   PENDING_CONFIRMATION // for the lender to confirm the payment
 }
 
