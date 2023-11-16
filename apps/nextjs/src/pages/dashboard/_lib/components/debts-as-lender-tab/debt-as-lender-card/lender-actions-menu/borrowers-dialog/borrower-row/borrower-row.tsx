@@ -3,8 +3,8 @@ import { Popover } from "$/components/ui/popover";
 import { Button } from "$/components/ui/button";
 import * as LucideIcons from "lucide-react";
 import { Avatar } from "$/components/ui/avatar";
-import { type Currency } from "$/server/api/routers/recurrent-debts/mutations/input";
-import { type GetDebtBorrowersAndPendingBorrowersResult } from "$/server/api/routers/recurrent-debts/queries/types";
+import { type GetDebtBorrowersAndPendingBorrowersResult } from "@deudamigo/api-contracts";
+import { type Currency } from "@deudamigo/utils";
 
 type Props = {
   borrower: GetDebtBorrowersAndPendingBorrowersResult["borrowers"][number];

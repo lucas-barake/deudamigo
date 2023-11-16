@@ -1,7 +1,6 @@
 import React from "react";
-import DebtCard from "$/pages/dashboard/(page-lib)/components/debt-card";
-import { type GetPersonalExpensesResult } from "$/server/api/routers/personal-expenses/queries/types";
-import ActionsMenu from "$/pages/dashboard/(page-lib)/components/expenses-tab/expense-card/actions-menu/actions-menu";
+import DebtCard from "$/pages/dashboard/_lib/components/debt-card";
+import ActionsMenu from "$/pages/dashboard/_lib/components/expenses-tab/expense-card/actions-menu/actions-menu";
 
 type Props = {
   expense: GetPersonalExpensesResult["expenses"][number];
@@ -15,10 +14,7 @@ const ExpenseCard: React.FC<Props> = ({ expense }) => {
       </DebtCard.Header>
 
       <DebtCard.BadgeContainer>
-        <DebtCard.AmountBadge
-          amount={expense.amount}
-          currency={expense.currency}
-        />
+        <DebtCard.AmountBadge amount={expense.amount} currency={expense.currency} />
       </DebtCard.BadgeContainer>
 
       <DebtCard.Description>{expense.description}</DebtCard.Description>

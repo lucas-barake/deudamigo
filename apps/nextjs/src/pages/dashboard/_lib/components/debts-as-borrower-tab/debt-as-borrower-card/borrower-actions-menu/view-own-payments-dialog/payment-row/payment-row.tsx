@@ -1,4 +1,5 @@
 import React from "react";
+import { api } from "$/lib/utils/api";
 import { DateTime } from "luxon";
 import { Badge } from "$/components/ui/badge";
 import { Button } from "$/components/ui/button";
@@ -6,17 +7,15 @@ import toast from "react-hot-toast";
 import { handleMutationError } from "$/lib/utils/handle-mutation-error";
 import { Trash } from "lucide-react";
 import { Card } from "$/components/ui/card";
+import { useSession } from "$/lib/hooks/use-session";
+import { formatCurrency } from "@deudamigo/utils";
+import { paymentStatusVariantsMap } from "$/pages/dashboard/_lib/lib/payment-status-variants-map";
+import { paymentStatusMap } from "$/pages/dashboard/_lib/lib/payment-status-map";
 import {
-  contracts,
-  formatCurrency,
   type GetBorrowerDebtsInput,
   type GetBorrowerDebtsResult,
   type GetPaymentsAsBorrowerResult,
-} from "@deudamigo/ts-rest";
-import { api } from "$/lib/configs/react-query-client";
-import { useSession } from "$/lib/hooks/use-session";
-import { paymentStatusVariantsMap } from "$/pages/dashboard/_lib/lib/payment-status-variants-map";
-import { paymentStatusMap } from "$/pages/dashboard/_lib/lib/payment-status-map";
+} from "@deudamigo/api-contracts";
 
 type Props = {
   payment: GetPaymentsAsBorrowerResult[number];
@@ -24,19 +23,9 @@ type Props = {
   queryVariables: GetBorrowerDebtsInput;
 };
 
-type Result =
-  | {
-      success: true;
-      data: unknown;
-    }
-  | {
-      success: false;
-      error: Error;
-    };
-
 const PaymentRow: React.FC<Props> = ({ payment, debt, queryVariables }) => {
   const apiContext = api.useUtils();
-  const removePaymentMutation = api.debts.removePayment.useMutation();
+  const removePaymentMutation = api.debtPayments.remove.useMutation();
   const session = useSession();
 
   async function handleRemove(): Promise<void> {
@@ -52,8 +41,10 @@ const PaymentRow: React.FC<Props> = ({ payment, debt, queryVariables }) => {
       }
     );
 
-    apiContext.debts.getPaymentsAsBorrower.setData(
-      [contracts.debts.removePayment, queryVariables],
+    apiContext.debtPayments.getPaymentsAsBorrower.setData(
+      {
+        debtId: debt.id,
+      },
       (cache) => {
         return cache?.filter(({ id }) => id !== payment.id) satisfies
           | GetPaymentsAsBorrowerResult
@@ -61,7 +52,7 @@ const PaymentRow: React.FC<Props> = ({ payment, debt, queryVariables }) => {
       }
     );
 
-    apiContext.debts.getSharedDebts.setData(queryVariables, (cache) => {
+    apiContext.debts.getLenderDebts.setData(queryVariables, (cache) => {
       if (cache === undefined) return cache;
       return {
         debts: cache.debts.map((cachedDebts) => {
@@ -69,7 +60,7 @@ const PaymentRow: React.FC<Props> = ({ payment, debt, queryVariables }) => {
           return {
             ...cachedDebts,
             borrowers: cachedDebts.borrowers.map((borrower) => {
-              if (borrower.user.id !== session.data?.user.id) return borrower;
+              if (borrower.user.id !== session.user.id) return borrower;
               return {
                 ...borrower,
                 balance: borrower.balance + payment.amount,

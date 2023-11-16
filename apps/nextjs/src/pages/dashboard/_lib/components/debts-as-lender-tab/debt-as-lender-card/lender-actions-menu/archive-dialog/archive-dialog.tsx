@@ -1,4 +1,5 @@
 import React from "react";
+import { api } from "$/lib/utils/api";
 import toast from "react-hot-toast";
 import { handleMutationError } from "$/lib/utils/handle-mutation-error";
 import { Dialog } from "$/components/ui/dialog";
@@ -6,31 +7,26 @@ import { AlertTriangle, BadgeCheck } from "lucide-react";
 import { Button } from "$/components/ui/button";
 import { useTimer } from "react-timer-hook";
 import { DateTime } from "luxon";
-import { contracts, type GetLenderDebtsInput, type GetLenderDebtsResult } from "@deudamigo/ts-rest";
-import { api } from "$/lib/configs/react-query-client";
-import { queryClient } from "$/pages/_app.page";
+import { type GetLenderDebtsResult } from "@deudamigo/api-contracts";
 
 type Props = {
   debt: GetLenderDebtsResult["debts"][number];
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  queryVariables: GetLenderDebtsInput;
 };
 
-const ArchiveDialog: React.FC<Props> = ({ debt, open, onOpenChange, queryVariables }) => {
+const ArchiveDialog: React.FC<Props> = ({ debt, open, onOpenChange }) => {
   const timer = useTimer({
     autoStart: true,
     expiryTimestamp: DateTime.now().plus({ millisecond: 3500 }).toJSDate(),
   });
+  const apiContext = api.useUtils();
   const archiveMutation = api.debts.archive.useMutation();
 
   async function handleArchive(): Promise<void> {
     await toast.promise(
       archiveMutation.mutateAsync({
-        params: {
-          id: debt.id,
-        },
-        body: null,
+        debtId: debt.id,
       }),
       {
         loading: "Archivando deuda...",
@@ -38,7 +34,7 @@ const ArchiveDialog: React.FC<Props> = ({ debt, open, onOpenChange, queryVariabl
         error: handleMutationError,
       }
     );
-    void queryClient.invalidateQueries([contracts.debts.getLenderDebts, queryVariables]);
+    await apiContext.debts.getLenderDebts.invalidate();
     onOpenChange(false);
   }
 

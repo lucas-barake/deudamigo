@@ -1,12 +1,11 @@
 import React from "react";
 import { Avatar } from "$/components/ui/avatar";
+import { api } from "$/lib/utils/api";
 import toast from "react-hot-toast";
 import { handleMutationError } from "$/lib/utils/handle-mutation-error";
 import { Button } from "$/components/ui/button";
 import { UserMinus } from "lucide-react";
-import { api } from "$/lib/configs/react-query-client";
-import { useTsRestQueryClient } from "@ts-rest/react-query";
-import { type GetDebtBorrowersAndPendingBorrowersResult } from "@deudamigo/ts-rest";
+import { type GetDebtBorrowersAndPendingBorrowersResult } from "@deudamigo/api-contracts";
 
 type Props = {
   pendingBorrower: GetDebtBorrowersAndPendingBorrowersResult["pendingBorrowers"][number];
@@ -14,15 +13,13 @@ type Props = {
 };
 
 const PendingBorrowerRow: React.FC<Props> = ({ pendingBorrower, debtId }) => {
-  const apiContext = useTsRestQueryClient(api);
-  const removeInvite = api.debtInvites.removeDebtInvite.useMutation();
+  const apiContext = api.useUtils();
+  const removeInvite = api.debtInvites.removeInvite.useMutation();
   async function handleRemoveInvite(): Promise<void> {
     await toast.promise(
       removeInvite.mutateAsync({
-        body: {
-          debtId,
-          inviteeEmail: pendingBorrower.inviteeEmail,
-        },
+        debtId,
+        inviteeEmail: pendingBorrower.inviteeEmail,
       }),
       {
         loading: "Eliminando invitación...",
@@ -31,14 +28,16 @@ const PendingBorrowerRow: React.FC<Props> = ({ pendingBorrower, debtId }) => {
       }
     );
 
-    apiContext.debts.getDebtBorrowersAndPendingBorrowers.setQueryData(
-      ["getDebtBorrowersAndPendingBorrowers"],
+    apiContext.debts.getDebtBorrowersAndPendingBorrowers.setData(
+      {
+        debtId,
+      },
       (cachedData) => {
         if (!cachedData) return cachedData;
 
         return {
           ...cachedData,
-          pendingBorrowers: cachedData.body.pendingBorrowers.filter(
+          pendingBorrowers: cachedData.pendingBorrowers.filter(
             (b) => b.inviteeEmail !== pendingBorrower.inviteeEmail
           ),
         };

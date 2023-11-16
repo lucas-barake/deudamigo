@@ -2,7 +2,7 @@ import React from "react";
 import { Button } from "$/components/ui/button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import _ from "lodash";
-import { DEBTS_QUERY_PAGINATION_LIMIT } from "@deudamigo/ts-rest";
+import { DEBTS_QUERY_PAGINATION_LIMIT } from "@deudamigo/api-contracts";
 
 const INTERVAL = 1_000; // 1 second
 

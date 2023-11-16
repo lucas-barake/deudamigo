@@ -4,10 +4,14 @@ import { Avatar } from "$/components/ui/avatar";
 import { Badge } from "$/components/ui/badge";
 import { BadgeCheck, CalendarCheck, CalendarIcon, Clock, RotateCw } from "lucide-react";
 import { DateTime } from "luxon";
-import { getRecurrentDebtFinalPayment, getRecurrentCycleDates } from "@deudamigo/utils";
 import { DebtRecurringFrequency } from "@prisma/client";
 import { Skeleton } from "$/components/ui/skeleton";
-import { type Currency, formatCurrency } from "@deudamigo/ts-rest";
+import {
+  type Currency,
+  formatCurrency,
+  getRecurrentCycleDates,
+  getRecurrentDebtFinalPayment,
+} from "@deudamigo/utils";
 
 type RootProps = {
   children: React.ReactNode;
@@ -109,8 +113,8 @@ const AmountBadge: React.FC<AmountBadgeProps> = ({ amount, currency, ...props })
 type DueDateBadgeProps = {
   recurringFrequency: DebtRecurringFrequency | null;
   duration: number | null;
-  createdAt: string | null;
-  dueDate: string | null;
+  createdAt: Date | null;
+  dueDate: Date | null;
 } & React.ComponentPropsWithoutRef<typeof Badge>;
 const DueDateBadge: React.FC<DueDateBadgeProps> = ({
   className,
@@ -130,7 +134,7 @@ const DueDateBadge: React.FC<DueDateBadgeProps> = ({
         createdAt,
       })
     : // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- We know it's not null because of the previous condition
-      DateTime.fromISO(dueDate!);
+      DateTime.fromJSDate(dueDate!);
   const endsToday = finalPaymentDate.hasSame(DateTime.now(), "day");
   const hasEnded = finalPaymentDate < DateTime.now();
 
@@ -175,7 +179,7 @@ const RecurringFrequencyBadge: React.FC<RecurringBadgeProps> = ({
 type PayUntilRecurrenceBadgeProps = {
   recurringFrequency: DebtRecurringFrequency | null;
   duration: number | null;
-  createdAt: string;
+  createdAt: Date;
 };
 const PayUntilRecurrenceBadge: React.FC<PayUntilRecurrenceBadgeProps> = ({
   recurringFrequency,
@@ -226,7 +230,7 @@ const Footer: React.FC<FooterProps> = ({ children, className, ...props }) => {
 };
 
 type CreatedAtBadgeProps = {
-  createdAt: string;
+  createdAt: Date;
   label?: string;
 } & React.ComponentPropsWithoutRef<typeof Badge>;
 const CreatedAtBadge: React.FC<CreatedAtBadgeProps> = ({
@@ -239,7 +243,7 @@ const CreatedAtBadge: React.FC<CreatedAtBadgeProps> = ({
     <Badge variant="outline" className={cn("h-full break-all", className)} {...props}>
       <CalendarIcon className="mr-1.5 h-3.5 w-3.5" />
       <span>
-        {label} {DateTime.fromISO(createdAt).toLocaleString(DateTime.DATE_MED)}
+        {label} {DateTime.fromJSDate(createdAt).toLocaleString(DateTime.DATE_MED)}
       </span>
     </Badge>
   );

@@ -7,7 +7,7 @@ import { cn } from "$/lib/utils/cn";
 import toast from "react-hot-toast";
 import { handleMutationError } from "$/lib/utils/handle-mutation-error";
 import { useSession } from "$/lib/hooks/use-session";
-import { api } from "$/lib/configs/react-query-client";
+import { api } from "$/lib/utils/api";
 
 type Props = {
   open: boolean;

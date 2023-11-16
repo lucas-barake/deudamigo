@@ -3,9 +3,9 @@ import { Popover } from "$/components/ui/popover";
 import { Button } from "$/components/ui/button";
 import { PaymentStatus } from "@prisma/client";
 import { Separator } from "$/components/ui/separator";
-import { type GetLenderDebtsInput, type GetLenderDebtsResult } from "@deudamigo/ts-rest";
 import DebtCard from "$/pages/dashboard/_lib/components/debt-card";
 import LenderActionsMenu from "$/pages/dashboard/_lib/components/debts-as-lender-tab/debt-as-lender-card/lender-actions-menu";
+import { type GetLenderDebtsInput, type GetLenderDebtsResult } from "@deudamigo/api-contracts";
 
 type Props = {
   debt: GetLenderDebtsResult["debts"][number];

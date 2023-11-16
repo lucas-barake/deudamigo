@@ -2,17 +2,18 @@ import React from "react";
 import { PaymentStatus } from "@prisma/client";
 import { Button } from "$/components/ui/button";
 import { Popover } from "$/components/ui/popover";
+import { type GetBorrowerDebtsInput, type GetBorrowerDebtsResult } from "@deudamigo/api-contracts";
 import { useSession } from "$/lib/hooks/use-session";
-import { type GetLenderDebtsResult } from "@deudamigo/ts-rest";
 import DebtCard from "$/pages/dashboard/_lib/components/debt-card";
 import BorrowerActionsMenu from "$/pages/dashboard/_lib/components/debts-as-borrower-tab/debt-as-borrower-card/borrower-actions-menu";
 
 type Props = {
-  debt: GetLenderDebtsResult["debts"][number];
+  debt: GetBorrowerDebtsResult["debts"][number];
+  queryVariables: GetBorrowerDebtsInput;
 };
-const DebtAsBorrowerCard: React.FC<Props> = ({ debt }) => {
+const DebtAsBorrowerCard: React.FC<Props> = ({ debt, queryVariables }) => {
   const session = useSession();
-  const borrower = debt.borrowers.find(({ user }) => user.email === session.user?.email);
+  const borrower = debt.borrowers.find(({ user }) => user.id === session.user.id);
   if (borrower === undefined) return null;
   const isDebtPaid =
     borrower.balance === 0 &&
@@ -79,7 +80,11 @@ const DebtAsBorrowerCard: React.FC<Props> = ({ debt }) => {
           />
         </div>
 
-        <BorrowerActionsMenu debt={debt} isConcluded={isDebtConcluded} />
+        <BorrowerActionsMenu
+          debt={debt}
+          queryVariables={queryVariables}
+          isConcluded={isDebtConcluded}
+        />
       </DebtCard.Footer>
     </DebtCard>
   );

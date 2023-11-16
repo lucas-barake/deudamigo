@@ -3,6 +3,8 @@ import { Popover } from "$/components/ui/popover";
 import { Button } from "$/components/ui/button";
 import { CheckIcon, Users2 } from "lucide-react";
 import { Command } from "$/components/ui/command";
+import { api } from "$/lib/utils/api";
+import { TimeInMs } from "$/lib/enums/time";
 import { FieldError } from "$/components/ui/form/field-error";
 import { ScrollArea } from "$/components/ui/scroll-area";
 import { Separator } from "$/components/ui/separator";
@@ -22,13 +24,13 @@ const RecentEmailsPopover: React.FC<Props> = ({
   disabled = false,
   disableSelected = false,
 }) => {
-  // const recentEmailsQuery = api.user.getRecentEmails.useQuery(undefined, {
-  //   staleTime: TimeInMs.TenSeconds,
-  //   cacheTime: TimeInMs.TenSeconds,
-  //   refetchOnWindowFocus: true,
-  //   refetchOnMount: true,
-  // });
-  // const recentEmails: string[] = [];
+  const recentEmailsQuery = api.user.getRecentEmails.useQuery(undefined, {
+    staleTime: TimeInMs.TenSeconds,
+    cacheTime: TimeInMs.TenSeconds,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+  });
+  const recentEmails = recentEmailsQuery.data ?? [];
 
   const [open, setOpen] = React.useState(false);
   const windowDimensions = useWindowDimensions();
@@ -52,51 +54,51 @@ const RecentEmailsPopover: React.FC<Props> = ({
             ? "end"
             : "center"
         }>
-        {/*{recentEmailsQuery.isFetching ? (*/}
-        {/*  <div className="flex items-center justify-center p-2">*/}
-        {/*    <Loader />*/}
-        {/*  </div>*/}
-        {/*) : recentEmailsQuery.isError ? (*/}
-        {/*  <FieldError className="p-2 text-center">{recentEmailsQuery.error.message}</FieldError>*/}
-        {/*) : recentEmails.length === 0 ? (*/}
-        {/*  <p className="text-muted-foreground p-2 text-center">*/}
-        {/*    Empieza a invitar a tus amigos para que aparezcan aquí*/}
-        {/*  </p>*/}
-        {/*) : (*/}
-        {/*  <React.Fragment>*/}
-        {/*    <p className="p-2 text-center text-sm">*/}
-        {/*      Los últimos 5 correos electrónicos a los que has invitado*/}
-        {/*    </p>*/}
+        {recentEmailsQuery.isFetching ? (
+          <div className="flex items-center justify-center p-2">
+            <Loader />
+          </div>
+        ) : recentEmailsQuery.isError ? (
+          <FieldError className="p-2 text-center">{recentEmailsQuery.error.message}</FieldError>
+        ) : recentEmails.length === 0 ? (
+          <p className="text-muted-foreground p-2 text-center">
+            Empieza a invitar a tus amigos para que aparezcan aquí
+          </p>
+        ) : (
+          <React.Fragment>
+            <p className="p-2 text-center text-sm">
+              Los últimos {MAX_STORED_RECENT_EMAILS} correos electrónicos a los que has invitado
+            </p>
 
-        {/*    <Separator />*/}
+            <Separator />
 
-        {/*    <Command>*/}
-        {/*      <Command.Input placeholder="Buscar..." />*/}
-        {/*      <Command.Empty>No se encontraron usuarios</Command.Empty>*/}
+            <Command>
+              <Command.Input placeholder="Buscar..." />
+              <Command.Empty>No se encontraron usuarios</Command.Empty>
 
-        {/*      <Command.Group>*/}
-        {/*        <ScrollArea className="h-72 overflow-y-scroll">*/}
-        {/*          {recentEmails.map((email) => {*/}
-        {/*            const isSelected = currentEmails.includes(email);*/}
-        {/*            return (*/}
-        {/*              <Command.Item*/}
-        {/*                key={email}*/}
-        {/*                value={email}*/}
-        {/*                onSelect={(e) => {*/}
-        {/*                  onSelect(e);*/}
-        {/*                  setOpen(false);*/}
-        {/*                }}*/}
-        {/*                disabled={isSelected && disableSelected}>*/}
-        {/*                {isSelected && <CheckIcon className="mr-1.5 h-4 w-4" />}*/}
-        {/*                {email}*/}
-        {/*              </Command.Item>*/}
-        {/*            );*/}
-        {/*          })}*/}
-        {/*        </ScrollArea>*/}
-        {/*      </Command.Group>*/}
-        {/*    </Command>*/}
-        {/*  </React.Fragment>*/}
-        {/*)}*/}
+              <Command.Group>
+                <ScrollArea className="h-72 overflow-y-scroll">
+                  {recentEmails.map((email) => {
+                    const isSelected = currentEmails.includes(email);
+                    return (
+                      <Command.Item
+                        key={email}
+                        value={email}
+                        onSelect={(e) => {
+                          onSelect(e);
+                          setOpen(false);
+                        }}
+                        disabled={isSelected && disableSelected}>
+                        {isSelected && <CheckIcon className="mr-1.5 h-4 w-4" />}
+                        {email}
+                      </Command.Item>
+                    );
+                  })}
+                </ScrollArea>
+              </Command.Group>
+            </Command>
+          </React.Fragment>
+        )}
       </Popover.Content>
     </Popover>
   );

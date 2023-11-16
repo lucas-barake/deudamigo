@@ -4,11 +4,11 @@ import { Button } from "$/components/ui/button";
 import * as LucideIcons from "lucide-react";
 import { InfoIcon } from "lucide-react";
 import { AttentionIndicator } from "$/components/common/attention-indicator/attention-indicator";
-import { type GetLenderDebtsInput, type GetLenderDebtsResult } from "@deudamigo/ts-rest";
 import ArchiveDialog from "$/pages/dashboard/_lib/components/debts-as-lender-tab/debt-as-lender-card/lender-actions-menu/archive-dialog";
 import PaymentsDialog from "$/pages/dashboard/_lib/components/debts-as-lender-tab/debt-as-lender-card/lender-actions-menu/payments-dialog";
 import BorrowersDialog from "$/pages/dashboard/_lib/components/debts-as-lender-tab/debt-as-lender-card/lender-actions-menu/borrowers-dialog";
 import RecurringCyclesDialog from "$/pages/dashboard/_lib/components/recurring-cycles-dialog";
+import { type GetLenderDebtsInput, type GetLenderDebtsResult } from "@deudamigo/api-contracts";
 
 type Props = {
   debt: GetLenderDebtsResult["debts"][number];
@@ -25,12 +25,7 @@ const LenderActionsMenu: React.FC<Props> = ({ debt, hasPendingConfirmations, que
 
   return (
     <React.Fragment>
-      <ArchiveDialog
-        debt={debt}
-        open={openArchiveDialog}
-        onOpenChange={setOpenArchiveDialog}
-        queryVariables={queryVariables}
-      />
+      <ArchiveDialog debt={debt} open={openArchiveDialog} onOpenChange={setOpenArchiveDialog} />
 
       <PaymentsDialog
         open={openPaymentsDialog}

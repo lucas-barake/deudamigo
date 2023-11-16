@@ -6,34 +6,35 @@ import { Button } from "$/components/ui/button";
 import { Popover } from "$/components/ui/popover";
 import { Separator } from "$/components/ui/separator";
 import { PaymentStatus } from "@prisma/client";
+import { api } from "$/lib/utils/api";
 import toast from "react-hot-toast";
 import { handleMutationError } from "$/lib/utils/handle-mutation-error";
-import { type GetLenderDebtsResult, type GetPaymentsAsLenderResult } from "@deudamigo/ts-rest";
-import { api } from "$/lib/configs/react-query-client";
-import { useTsRestQueryClient } from "@ts-rest/react-query";
 import { formatCurrency } from "@deudamigo/utils";
 import { paymentStatusVariantsMap } from "$/pages/dashboard/_lib/lib/payment-status-variants-map";
-import { queryClient } from "$/pages/_app.page";
 import { paymentStatusMap } from "$/pages/dashboard/_lib/lib/payment-status-map";
+import {
+  type GetLenderDebtsInput,
+  type GetLenderDebtsResult,
+  type GetPaymentsAsLenderResult,
+} from "@deudamigo/api-contracts";
 
 type Props = {
   payment: GetPaymentsAsLenderResult["payments"][number];
   debt: GetLenderDebtsResult["debts"][number];
+  queryVariables: GetLenderDebtsInput;
 };
 
-const PaymentRow: React.FC<Props> = ({ payment, debt }) => {
-  const confirmPaymentMutation = api.debtPayments.confirmPayment.useMutation();
-  const apiContext = useTsRestQueryClient(api);
+const PaymentRow: React.FC<Props> = ({ payment, debt, queryVariables }) => {
+  const confirmPaymentMutation = api.debtPayments.confirm.useMutation();
+  const apiContext = api.useUtils();
   const isArchived = debt.archived !== null;
 
   async function handleConfirmPayment(): Promise<void> {
     await toast.promise(
       confirmPaymentMutation.mutateAsync({
-        body: {
-          debtId: debt.id,
-          paymentId: payment.id,
-          borrowerId: payment.borrower.user.id,
-        },
+        debtId: debt.id,
+        paymentId: payment.id,
+        borrowerId: payment.borrower.user.id,
       }),
       {
         loading: "Confirmando pago...",
@@ -42,13 +43,12 @@ const PaymentRow: React.FC<Props> = ({ payment, debt }) => {
       }
     );
 
-    void queryClient.invalidateQueries(["getLenderDebts"]);
+    void apiContext.debts.getLenderDebts.invalidate(queryVariables);
 
-    apiContext.debtPayments.getPaymentsAsLender.setQueryData(["getLenderDebts"], (cache) => {
+    apiContext.debtPayments.getPaymentsAsLender.setData({ debtId: debt.id }, (cache) => {
       if (cache === undefined) return cache;
       return {
-        ...cache,
-        payments: cache.body.payments.map((cachedPayment) => {
+        payments: cache.payments.map((cachedPayment) => {
           if (cachedPayment.id !== payment.id) return cachedPayment;
           return {
             ...cachedPayment,

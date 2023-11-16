@@ -2,15 +2,16 @@ import React from "react";
 import { Dialog } from "$/components/ui/dialog";
 import { Button, buttonVariants } from "$/components/ui/button";
 import { EyeIcon, Loader2, SearchCheckIcon, User2Icon } from "lucide-react";
+import { api } from "$/lib/utils/api";
 import { Avatar } from "$/components/ui/avatar";
 import { TimeInMs } from "$/lib/enums/time";
 import { Label } from "$/components/ui/form/label";
 import { Input } from "$/components/ui/form/input";
 import { Separator } from "$/components/ui/separator";
-import { api } from "$/lib/configs/react-query-client";
+import { type GetPartnersInput } from "@deudamigo/api-contracts";
 
 type Props = {
-  type: "borrower" | "lender";
+  type: GetPartnersInput;
   selectedPartnerEmail: string | null;
   selectPartnerEmail: (email: string | null) => void;
 };
@@ -21,21 +22,13 @@ const PartnersFilterDialog: React.FC<Props> = ({
   selectedPartnerEmail,
 }) => {
   const [filter, setFilter] = React.useState("");
-  const query = api.debts.getPartners.useQuery(
-    ["getPartners"],
-    {
-      params: {
-        role: type,
-      },
-    },
-    {
-      cacheTime: TimeInMs.OneMinute,
-      staleTime: TimeInMs.OneMinute,
-      refetchOnWindowFocus: true,
-      refetchOnMount: true,
-    }
-  );
-  const partners = query.data?.body ?? [];
+  const query = api.debts.getPartners.useQuery(type, {
+    cacheTime: TimeInMs.OneMinute,
+    staleTime: TimeInMs.OneMinute,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+  });
+  const partners = query.data ?? [];
   const filteredPartners = partners.filter((member) => {
     const searchTerm = filter.toLowerCase();
     const emailMatch = member.email?.toLowerCase().includes(searchTerm) ?? false;

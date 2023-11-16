@@ -9,18 +9,18 @@ import { DateTime } from "luxon";
 import { CurrencyInput } from "$/components/ui/currency-input";
 import { type TabSetters } from "$/lib/hooks/use-tabs";
 import { type addDebtTabs } from "$/pages/dashboard/_lib/components/debts-as-lender-tab/add-debt-dialog/(component-lib)/add-debt-tabs";
+import RecurringCyclesDialog from "$/pages/dashboard/_lib/components/recurring-cycles-dialog";
+import { CURRENCIES } from "@deudamigo/utils";
 import {
   type CreateDebtInput,
   createDebtRecurrentOptions,
   createDebtTypeOptions,
-  CURRENCIES,
   DEBT_MAX_BIWEEKLY_DURATION,
   DEBT_MAX_MONTHLY_DURATION,
   DEBT_MAX_WEEKLY_DURATION,
   generalInfoInput,
   type GeneralInfoInput,
-} from "@deudamigo/ts-rest";
-import RecurringCyclesDialog from "$/pages/dashboard/_lib/components/recurring-cycles-dialog";
+} from "@deudamigo/api-contracts";
 
 function roundToTwoDecimals(num: number): number {
   return Math.round((num + Number.EPSILON) * 100) / 100;

@@ -1,25 +1,23 @@
 import React from "react";
 import { Dialog } from "$/components/ui/dialog";
+import { api } from "$/lib/utils/api";
 import { TimeInMs } from "$/lib/enums/time";
 import { ScrollArea } from "$/components/ui/scroll-area";
 import { Loader } from "$/components/ui/loader";
-import { type GetBorrowerDebtsResult } from "@deudamigo/ts-rest";
-import { api } from "$/lib/configs/react-query-client";
-import PaymentRow from "$/pages/dashboard/_lib/components/debts-as-lender-tab/debt-as-lender-card/lender-actions-menu/payments-dialog/payment-row";
+import { type GetBorrowerDebtsInput, type GetBorrowerDebtsResult } from "@deudamigo/api-contracts";
+import PaymentRow from "$/pages/dashboard/_lib/components/debts-as-borrower-tab/debt-as-borrower-card/borrower-actions-menu/view-own-payments-dialog/payment-row";
 
 type Props = {
   debt: GetBorrowerDebtsResult["debts"][number];
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  queryVariables: GetBorrowerDebtsInput;
 };
 
-const ViewOwnPaymentsDialog: React.FC<Props> = ({ debt, open, onOpenChange }) => {
-  const query = api.debtPayments.getPaymentsAsBorrower.useQuery(
-    ["getPaymentsAsBorrower"],
+const ViewOwnPaymentsDialog: React.FC<Props> = ({ debt, open, onOpenChange, queryVariables }) => {
+  const query = api.debts.getPaymentsAsBorrower.useQuery(
     {
-      query: {
-        debtId: debt.id,
-      },
+      debtId: debt.id,
     },
     {
       enabled: open,
@@ -29,7 +27,7 @@ const ViewOwnPaymentsDialog: React.FC<Props> = ({ debt, open, onOpenChange }) =>
       refetchOnWindowFocus: false,
     }
   );
-  const payments = query.data?.body ?? [];
+  const payments = query.data ?? [];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -51,7 +49,12 @@ const ViewOwnPaymentsDialog: React.FC<Props> = ({ debt, open, onOpenChange }) =>
         ) : (
           <ScrollArea className="h-[500px]">
             {payments.map((payment) => (
-              <PaymentRow key={payment.id} payment={payment} debt={debt} />
+              <PaymentRow
+                key={payment.id}
+                payment={payment}
+                debt={debt}
+                queryVariables={queryVariables}
+              />
             ))}
           </ScrollArea>
         )}

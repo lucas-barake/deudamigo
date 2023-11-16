@@ -6,6 +6,7 @@ import { type TabList, useTabs } from "$/lib/hooks/use-tabs";
 import { createManyUnion } from "$/lib/utils/zod/create-union-schema";
 import React from "react";
 import DebtsAsLenderTab from "$/pages/dashboard/_lib/components/debts-as-lender-tab";
+import DebtsAsBorrowerTab from "$/pages/dashboard/_lib/components/debts-as-borrower-tab";
 
 const tabs = ["as-lender", "as-borrower", "my-expenses"] as const satisfies TabList;
 type Tab = (typeof tabs)[number];
@@ -76,7 +77,7 @@ const Dashboard: NextPageWithLayout = () => {
       </Tabs.Content>
 
       <Tabs.Content value={tabs[1]} className="flex flex-col justify-between gap-4">
-        <h1>HI</h1>
+        <DebtsAsBorrowerTab />
       </Tabs.Content>
 
       <Tabs.Content value={tabs[2]} className="flex flex-col justify-between gap-4">

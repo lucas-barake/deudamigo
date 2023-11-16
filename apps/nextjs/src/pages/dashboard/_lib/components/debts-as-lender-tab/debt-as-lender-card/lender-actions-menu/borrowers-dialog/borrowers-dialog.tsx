@@ -1,6 +1,7 @@
 import React from "react";
 import { Dialog } from "$/components/ui/dialog";
 import { Button } from "$/components/ui/button";
+import { api } from "$/lib/utils/api";
 import { TimeInMs } from "$/lib/enums/time";
 import { Form } from "$/components/ui/form";
 import toast from "react-hot-toast";
@@ -10,18 +11,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Separator } from "$/components/ui/separator";
 import * as LucideIcons from "lucide-react";
 import { Loader } from "$/components/ui/loader";
+import { useSession } from "$/lib/hooks/use-session";
+import PendingBorrowerRow from "$/pages/dashboard/_lib/components/debts-as-lender-tab/debt-as-lender-card/lender-actions-menu/borrowers-dialog/pending-borrower-row";
+import BorrowerRow from "$/pages/dashboard/_lib/components/debts-as-lender-tab/debt-as-lender-card/lender-actions-menu/borrowers-dialog/borrower-row";
+import RecentEmailsPopover from "$/pages/dashboard/_lib/components/recent-emails-popover";
 import {
   type GetDebtBorrowersAndPendingBorrowersResult,
   type GetLenderDebtsResult,
   sendDebtInviteInput,
   type SendDebtInviteInput,
-} from "@deudamigo/ts-rest";
-import { api } from "$/lib/configs/react-query-client";
-import { useSession } from "$/lib/hooks/use-session";
-import RecentEmailsPopover from "$/pages/dashboard/_lib/components/recent-emails-popover";
-import BorrowerRow from "$/pages/dashboard/_lib/components/debts-as-lender-tab/debt-as-lender-card/lender-actions-menu/borrowers-dialog/borrower-row";
-import PendingBorrowerRow from "$/pages/dashboard/_lib/components/debts-as-lender-tab/debt-as-lender-card/lender-actions-menu/borrowers-dialog/pending-borrower-row";
-import { useTsRestQueryClient } from "@ts-rest/react-query";
+} from "@deudamigo/api-contracts";
 
 type Props = {
   open: boolean;
@@ -31,10 +30,11 @@ type Props = {
 
 const BorrowersDialog: React.FC<Props> = ({ open, onOpenChange, debt }) => {
   const isArchived = debt.archived !== null;
-  const apiContext = useTsRestQueryClient(api);
+  const apiContext = api.useUtils();
   const query = api.debts.getDebtBorrowersAndPendingBorrowers.useQuery(
-    ["getDebtBorrowersAndPendingBorrowers"],
-    { params: { debtId: debt.id } },
+    {
+      debtId: debt.id,
+    },
     {
       enabled: open,
       staleTime: TimeInMs.TenSeconds,
@@ -43,8 +43,8 @@ const BorrowersDialog: React.FC<Props> = ({ open, onOpenChange, debt }) => {
       refetchOnMount: true,
     }
   );
-  const borrowers = query.data?.body.borrowers ?? [];
-  const pendingBorrowers = query.data?.body.pendingBorrowers ?? [];
+  const borrowers = query.data?.borrowers ?? [];
+  const pendingBorrowers = query.data?.pendingBorrowers ?? [];
   // @ts-expect-error - TypeScript can't infer filter removes nulls
   const allEmails: string[] = borrowers
     .filter((b) => b.user.email !== null)
@@ -75,29 +75,25 @@ const BorrowersDialog: React.FC<Props> = ({ open, onOpenChange, debt }) => {
     reValidateMode: "onChange",
   });
 
-  const sendInviteMutation = api.debtInvites.sendDebtInvite.useMutation();
+  const sendInviteMutation = api.debtInvites.sendInvite.useMutation();
 
   async function handleSendInvite(input: SendDebtInviteInput): Promise<void> {
-    await toast.promise(
-      sendInviteMutation.mutateAsync({
-        body: input,
-      }),
-      {
-        loading: "Enviando invitación...",
-        success: "Invitación enviada",
-        error: handleMutationError,
-      }
-    );
+    await toast.promise(sendInviteMutation.mutateAsync(input), {
+      loading: "Enviando invitación...",
+      success: "Invitación enviada",
+      error: handleMutationError,
+    });
 
-    apiContext.debts.getDebtBorrowersAndPendingBorrowers.setQueryData(
-      ["getDebtBorrowersAndPendingBorrowers"],
+    apiContext.debts.getDebtBorrowersAndPendingBorrowers.setData(
+      {
+        debtId: debt.id,
+      },
       (cachedData) => {
         if (cachedData === undefined) return cachedData;
         return {
           ...cachedData,
-          borrowers: cachedData.body.borrowers,
           pendingBorrowers: [
-            ...cachedData.body.pendingBorrowers,
+            ...cachedData.pendingBorrowers,
             {
               inviteeEmail: input.email,
             },

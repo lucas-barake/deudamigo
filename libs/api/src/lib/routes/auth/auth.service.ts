@@ -1,9 +1,9 @@
-import { admin } from "$/lib/firebase";
-import { Logger } from "$/lib/utils/logger";
+import { admin } from "../../firebase";
+import { Logger } from "../../utils/logger";
 import { type DecodedIdToken } from "firebase-admin/lib/auth/token-verifier";
 import { TimeInMs } from "@deudamigo/utils";
 import { prisma, type Prisma } from "@deudamigo/database";
-import { type User } from "$/lib/routes/auth/output";
+import { type User } from "@deudamigo/api-contracts";
 
 const userSelect = {
   id: true,

@@ -1,15 +1,15 @@
 import React from "react";
+import { api } from "$/lib/utils/api";
 import { TimeInMs } from "$/lib/enums/time";
-import DebtCard from "$/pages/dashboard/_lib/components/debt-card";
-import PageControls from "$/pages/dashboard/_lib/components/page-controls";
+import { useSessionStorage } from "$/lib/hooks/browser-storage/use-session-storage";
+import PartnersFilterDialog from "$/pages/dashboard/_lib/components/partners-filter-dialog";
 import SortMenu from "$/pages/dashboard/_lib/components/sort-menu";
 import FiltersMenu from "$/pages/dashboard/_lib/components/filters-menu";
-import PartnersFilterDialog from "$/pages/dashboard/_lib/components/partners-filter-dialog";
-import { useSessionStorage } from "$/lib/hooks/browser-storage/use-session-storage";
-import { api } from "$/lib/configs/react-query-client";
-import { DEBTS_QUERY_PAGINATION_LIMIT, getBorrowerDebtsInput } from "@deudamigo/ts-rest";
 import DebtsGrid from "$/pages/dashboard/_lib/components/debts-grid";
+import DebtCard from "$/pages/dashboard/_lib/components/debt-card";
 import DebtAsBorrowerCard from "$/pages/dashboard/_lib/components/debts-as-borrower-tab/debt-as-borrower-card";
+import PageControls from "$/pages/dashboard/_lib/components/page-controls";
+import { DEBTS_QUERY_PAGINATION_LIMIT, getBorrowerDebtsInput } from "@deudamigo/api-contracts";
 
 const DebtsAsBorrowerTab: React.FC = () => {
   const { state: queryVariables, setState: setQueryVariables } = useSessionStorage({
@@ -20,21 +20,15 @@ const DebtsAsBorrowerTab: React.FC = () => {
       status: "active",
       partnerEmail: null,
     },
-    key: "recurrent-debts-as-borrower-tab-query-variables",
+    key: "debts-as-borrower-tab-query-variables",
   });
 
-  const query = api.debts.getBorrowerDebts.useQuery(
-    ["getBorrowerDebts"],
-    {
-      query: queryVariables,
-    },
-    {
-      staleTime: TimeInMs.FifteenSeconds,
-      refetchOnWindowFocus: true,
-      refetchOnMount: true,
-    }
-  );
-  const debts = query.data?.body.debts ?? [];
+  const query = api.debts.getBorrowerDebts.useQuery(queryVariables, {
+    staleTime: TimeInMs.FifteenSeconds,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+  });
+  const debts = query.data?.debts ?? [];
 
   return (
     <React.Fragment>
@@ -80,7 +74,7 @@ const DebtsAsBorrowerTab: React.FC = () => {
       <DebtsGrid>
         {query.isLoading ? (
           <React.Fragment>
-            {Array.from({ length: DEBTS_QUERY_PAGINATION_LIMIT }).map((_, index) => (
+            {Array.from({ length: 8 }).map((_, index) => (
               <DebtCard.Skeleton key={index} />
             ))}
           </React.Fragment>
@@ -88,7 +82,7 @@ const DebtsAsBorrowerTab: React.FC = () => {
           query.isSuccess && (
             <React.Fragment>
               {debts.map((debt) => (
-                <DebtAsBorrowerCard key={debt.id} debt={debt} />
+                <DebtAsBorrowerCard key={debt.id} debt={debt} queryVariables={queryVariables} />
               ))}
             </React.Fragment>
           )
@@ -103,7 +97,7 @@ const DebtsAsBorrowerTab: React.FC = () => {
             skip: page * DEBTS_QUERY_PAGINATION_LIMIT,
           });
         }}
-        count={query.data?.body.count ?? 0}
+        count={query.data?.count ?? 0}
       />
     </React.Fragment>
   );

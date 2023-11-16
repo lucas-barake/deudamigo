@@ -7,7 +7,7 @@ import {
   type GetBorrowerDebtsInput,
   type GetLenderDebtsInput,
   lenderDebtsStatusOptions,
-} from "@deudamigo/ts-rest";
+} from "@deudamigo/api-contracts";
 
 type LenderProps = {
   selectedStatus: GetLenderDebtsInput["status"];
@@ -28,7 +28,10 @@ const FiltersMenu: React.FC<Props> = ({ selectedStatus, setSelectedStatus, lende
         <Button variant="outline">
           <LucideIcons.Settings2 className="h-4 w-4 sm:mr-2" />
           <span className="hidden sm:inline">
-            {lenderDebtsStatusOptions.find((status) => status.value === selectedStatus)?.label}
+            {(lender
+              ? lenderDebtsStatusOptions.find((status) => status.value === selectedStatus)?.label
+              : borrowerDebtsStatusOptions.find((status) => status.value === selectedStatus)
+                  ?.label) ?? "Estado"}
           </span>
         </Button>
       </DropdownMenu.Trigger>

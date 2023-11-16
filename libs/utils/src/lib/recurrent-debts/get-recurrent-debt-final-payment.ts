@@ -2,7 +2,7 @@ import { DateTime } from "luxon";
 import { DebtRecurringFrequency } from "@deudamigo/database";
 
 type Args = {
-  createdAt: string;
+  createdAt: Date;
   duration: number;
   recurringFrequency: DebtRecurringFrequency;
 };

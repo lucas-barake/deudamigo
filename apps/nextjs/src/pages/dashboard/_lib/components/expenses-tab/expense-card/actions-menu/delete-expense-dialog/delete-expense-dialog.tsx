@@ -37,7 +37,8 @@ const DeleteExpenseDialog: React.FC<Props> = ({ expense, open, setOpen }) => {
           <Dialog.Title>Eliminar Gasto</Dialog.Title>
 
           <Dialog.Description>
-            ¿Estás seguro que deseas eliminar este gasto? Esta acción no se puede deshacer.
+            ¿Estás seguro que deseas eliminar este gasto? Esta acción no se
+            puede deshacer.
           </Dialog.Description>
         </Dialog.Header>
 
@@ -47,7 +48,8 @@ const DeleteExpenseDialog: React.FC<Props> = ({ expense, open, setOpen }) => {
             onClick={() => {
               void handleDelete();
             }}
-            loading={deleteMutation.isLoading}>
+            loading={deleteMutation.isLoading}
+          >
             Eliminar
           </Button>
 
@@ -55,7 +57,8 @@ const DeleteExpenseDialog: React.FC<Props> = ({ expense, open, setOpen }) => {
             variant="outline"
             onClick={() => {
               setOpen(false);
-            }}>
+            }}
+          >
             Cancelar
           </Button>
         </Dialog.Footer>

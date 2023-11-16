@@ -1,21 +1,17 @@
-import { AuthService } from "$/lib/routes/auth/auth.service";
-import { loginInput } from "$/lib/routes/auth/input";
-import { createTRPCRouter, trpcProcedures } from "$/lib/trpc";
-import { Logger } from "$/lib/utils/logger";
+import { AuthService } from "./auth.service";
+import { createTRPCRouter, trpcProcedures } from "../../trpc";
+import { Logger } from "../../utils/logger";
 import { TRPCError } from "@trpc/server";
 import { setCookie } from "cookies-next";
+import { loginInput } from "@deudamigo/api-contracts";
 
-export const authRoute = createTRPCRouter({
+const authService = AuthService.getInstance();
+
+export const authController = createTRPCRouter({
   login: trpcProcedures.public.input(loginInput).mutation(async ({ ctx, input }) => {
-    const logger = new Logger("login");
-    const accessToken = input.authorization.split("Bearer ")[1];
-
     try {
-      const authService = AuthService.getInstance();
-
-      const { userInfo } = await authService.verifyAndUpsertUser(accessToken);
-
-      const { sessionCookie, expiresIn } = await authService.createSessionCookie(accessToken);
+      const { userInfo } = await authService.verifyAndUpsertUser(input.accessToken);
+      const { sessionCookie, expiresIn } = await authService.createSessionCookie(input.accessToken);
       setCookie("session", sessionCookie, {
         req: ctx.req,
         res: ctx.res,
@@ -33,7 +29,7 @@ export const authRoute = createTRPCRouter({
           message: error.message,
         });
       }
-      logger.error(`Login: ${error}`);
+      Logger.error(`Login: ${error}`);
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
         message: error instanceof Error ? error.name : "Internal server error",
@@ -42,7 +38,6 @@ export const authRoute = createTRPCRouter({
   }),
 
   me: trpcProcedures.protected.query(async ({ ctx }) => {
-    const authService = AuthService.getInstance();
     const userInfo = await authService.getUserInfo(ctx.session.user.email);
 
     if (!userInfo) {
@@ -56,9 +51,7 @@ export const authRoute = createTRPCRouter({
   }),
 
   logout: trpcProcedures.protected.mutation(async ({ ctx }) => {
-    const authService = AuthService.getInstance();
     await authService.revokeToken(ctx.session.sessionCookie);
-
     return true;
   }),
 });

@@ -3,9 +3,9 @@ import { Card } from "$/components/ui/card";
 import { Button } from "$/components/ui/button";
 import { EyeIcon } from "lucide-react";
 import { PaymentStatus } from "@prisma/client";
-import { type GetLenderDebtsResult } from "@deudamigo/ts-rest";
 import DebtCard from "$/pages/dashboard/_lib/components/debt-card";
 import { formatCurrency } from "@deudamigo/utils";
+import { type GetLenderDebtsResult } from "@deudamigo/api-contracts";
 
 type Props = {
   setSelectedBorrowerId: React.Dispatch<React.SetStateAction<string | null>>;

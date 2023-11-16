@@ -1,10 +1,10 @@
-import { TRPCError, initTRPC } from "@trpc/server";
+import { initTRPC, TRPCError } from "@trpc/server";
 import { prisma } from "@deudamigo/database";
 import { redis } from "@deudamigo/redis";
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 import { ZodError } from "zod";
 import superjson from "superjson";
-import { admin } from "$/lib/firebase";
+import { admin } from "./firebase";
 
 export type Session = {
   user: {
@@ -26,7 +26,7 @@ function createInnerTRPCContext(opts: CreateContextOptions) {
     ...opts,
   };
 }
-export type InnerTRPCCtx = ReturnType<typeof createInnerTRPCContext>;
+export type InnerTRPCContext = ReturnType<typeof createInnerTRPCContext>;
 
 export const createTRPCContext = async (opts: CreateNextContextOptions) => {
   return createInnerTRPCContext({

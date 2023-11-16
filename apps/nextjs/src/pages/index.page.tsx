@@ -21,7 +21,7 @@ const Home: NextPageWithLayout = () => {
     onSuccess(data) {
       authStore.set({
         status: "authenticated",
-        user: data.body,
+        user: data,
       });
       void router.push(Pages.DASHBOARD);
     },
@@ -30,8 +30,8 @@ const Home: NextPageWithLayout = () => {
   async function handleSignIn(): Promise<void> {
     try {
       const result = await signInWithGoogle();
-      const token = await result.user.getIdToken();
-      await loginMutation.mutateAsync({ headers: { authorization: `Bearer ${token}` } });
+      const accessToken = await result.user.getIdToken();
+      await loginMutation.mutateAsync({ accessToken });
     } catch (error: unknown) {
       console.error(error);
     }

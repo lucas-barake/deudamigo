@@ -4,29 +4,30 @@ import { Form } from "$/components/ui/form";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "$/components/ui/button";
+import { api } from "$/lib/utils/api";
 import toast from "react-hot-toast";
 import { handleMutationError } from "$/lib/utils/handle-mutation-error";
 import { PaymentStatus } from "@prisma/client";
 import { CurrencyInput } from "$/components/ui/currency-input";
+import { useSession } from "$/lib/hooks/use-session";
+import { formatCurrency } from "@deudamigo/utils";
 import {
   addPaymentInput,
   type AddPaymentInput,
-  formatCurrency,
+  type GetBorrowerDebtsInput,
   type GetBorrowerDebtsResult,
-} from "@deudamigo/ts-rest";
-import { useSession } from "$/lib/hooks/use-session";
-import { api } from "$/lib/configs/react-query-client";
-import { useTsRestQueryClient } from "@ts-rest/react-query";
+} from "@deudamigo/api-contracts";
 
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   debt: GetBorrowerDebtsResult["debts"][number];
+  queryVariables: GetBorrowerDebtsInput;
 };
 
-const AddPaymentDialog: React.FC<Props> = ({ open, onOpenChange, debt }) => {
+const AddPaymentDialog: React.FC<Props> = ({ open, onOpenChange, debt, queryVariables }) => {
   const session = useSession();
-  const borrower = debt.borrowers.find(({ user }) => user.email === session.user?.email);
+  const borrower = debt.borrowers.find(({ user }) => user.id === session.user?.id);
   const form = useForm<AddPaymentInput>({
     defaultValues: {
       fullPayment: true,
@@ -48,41 +49,35 @@ const AddPaymentDialog: React.FC<Props> = ({ open, onOpenChange, debt }) => {
   });
   const borrowerBalance = borrower?.balance ?? 0;
   const isFullPayment = form.watch("fullPayment");
-  const addPaymentMutation = api.debtPayments.addPayment.useMutation();
-  const apiContext = useTsRestQueryClient(api);
+  const addPaymentMutation = api.debtPayments.add.useMutation();
+  const apiContext = api.useUtils();
 
   async function handleSubmit(data: AddPaymentInput): Promise<void> {
-    const result = await toast.promise(
-      addPaymentMutation.mutateAsync({
-        body: data,
-      }),
-      {
-        loading: "Agregando pago...",
-        success: "Pago agregado exitosamente.",
-        error: handleMutationError,
-      }
-    );
+    const result = await toast.promise(addPaymentMutation.mutateAsync(data), {
+      loading: "Agregando pago...",
+      success: "Pago agregado exitosamente.",
+      error: handleMutationError,
+    });
 
-    apiContext.debts.getBorrowerDebts.setQueryData(["getBorrowerDebts"], (cache) => {
+    apiContext.debts.getLenderDebts.setData(queryVariables, (cache) => {
       if (cache === undefined) return cache;
 
       return {
-        ...cache,
-        debts: cache.body.debts.map((cachedDebt) => {
+        debts: cache.debts.map((cachedDebt) => {
           if (cachedDebt.id !== debt.id) return cachedDebt;
           return {
             ...cachedDebt,
             borrowers: cachedDebt.borrowers.map((cachedBorrower) => {
-              if (cachedBorrower.user.email === session.user?.email) {
+              if (cachedBorrower.user.id === session.user?.id) {
                 return {
                   ...cachedBorrower,
-                  balance: result.body.newBalance,
+                  balance: result.newBalance,
                   payments: [
                     ...cachedBorrower.payments,
                     {
-                      amount: result.body.amount,
+                      amount: result.amount,
                       status: PaymentStatus.PENDING_CONFIRMATION,
-                      id: result.body.newPaymentId,
+                      id: result.newPaymentId,
                     },
                   ],
                 };
@@ -91,7 +86,7 @@ const AddPaymentDialog: React.FC<Props> = ({ open, onOpenChange, debt }) => {
             }),
           };
         }),
-        count: cache.body.count,
+        count: cache.count,
       } satisfies GetBorrowerDebtsResult;
     });
 

@@ -12,7 +12,7 @@ type Props = {
   onOpenChange: (newOpen: boolean) => void;
   recurringFrequency: DebtRecurringFrequency;
   duration: number;
-  createdAt: string;
+  createdAt: Date;
 };
 
 const RecurringCyclesDialog: React.FC<Props> = ({

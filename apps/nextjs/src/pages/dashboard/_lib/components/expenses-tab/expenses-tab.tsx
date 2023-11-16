@@ -7,7 +7,7 @@ import {
 } from "$/server/api/routers/personal-expenses/queries/input";
 import { TimeInMs } from "$/lib/enums/time";
 import SortMenu from "src/pages/dashboard/(page-lib)/components/expenses-tab/sort-menu";
-import DebtsGrid from "$/pages/dashboard/(page-lib)/components/recurrent-debts-grid";
+import DebtsGrid from "$/pages/dashboard/(page-lib)/components/debts-grid";
 import DebtCard from "$/pages/dashboard/(page-lib)/components/debt-card";
 import ExpenseCard from "$/pages/dashboard/(page-lib)/components/expenses-tab/expense-card";
 import PageControls from "$/pages/dashboard/(page-lib)/components/page-controls";
@@ -45,7 +45,8 @@ const ExpensesTab: React.FC = () => {
           onClick={() => {
             setOpenAdd(true);
           }}
-          className="flex items-center gap-1">
+          className="flex items-center gap-1"
+        >
           <Plus className="h-4 w-4" />
           <span className="hidden sm:inline-flex">Agregar</span>
           Gasto

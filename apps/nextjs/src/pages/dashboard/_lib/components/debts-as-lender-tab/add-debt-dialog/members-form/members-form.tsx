@@ -5,23 +5,26 @@ import { Form } from "$/components/ui/form";
 import { Button } from "$/components/ui/button";
 import { z } from "zod";
 import { ArrowLeft, Plus } from "lucide-react";
+import { api } from "$/lib/utils/api";
 import toast from "react-hot-toast";
 import { handleMutationError } from "$/lib/utils/handle-mutation-error";
-import { type TabSetters } from "$/lib/hooks/use-tabs";
+import { useSession } from "$/lib/hooks/use-session";
 import { type addDebtTabs } from "$/pages/dashboard/_lib/components/debts-as-lender-tab/add-debt-dialog/(component-lib)/add-debt-tabs";
+import { type TabSetters } from "$/lib/hooks/use-tabs";
+import RecentEmailsPopover from "$/pages/dashboard/_lib/components/recent-emails-popover";
+import MemberRow from "$/pages/dashboard/_lib/components/debts-as-lender-tab/add-debt-dialog/members-form/member-row";
 import {
-  contracts,
   createDebtInput,
   type CreateDebtInput,
   DEBT_MAX_BORROWERS,
   defaultCreateDebtInput,
   type GetLenderDebtsInput,
-} from "@deudamigo/ts-rest";
-import { useSession } from "$/lib/hooks/use-session";
-import { api } from "$/lib/configs/react-query-client";
-import RecentEmailsPopover from "$/pages/dashboard/_lib/components/recent-emails-popover";
-import MemberRow from "$/pages/dashboard/_lib/components/debts-as-lender-tab/add-debt-dialog/members-form/member-row";
-import { queryClient } from "$/pages/_app.page";
+} from "@deudamigo/api-contracts";
+
+const formInput = z.object({
+  borrowerEmail: z.string().email("Email inválido"),
+});
+type FormInput = z.infer<typeof formInput>;
 
 type Props = {
   tabSetters: TabSetters<typeof addDebtTabs>;
@@ -30,11 +33,6 @@ type Props = {
   formData: CreateDebtInput;
   setFormData: React.Dispatch<React.SetStateAction<CreateDebtInput>>;
 };
-
-const formInput = z.object({
-  borrowerEmail: z.string().email("Email inválido"),
-});
-type FormInput = z.infer<typeof formInput>;
 
 const MembersForm: React.FC<Props> = ({
   tabSetters,
@@ -48,7 +46,7 @@ const MembersForm: React.FC<Props> = ({
     mode: "onSubmit",
     reValidateMode: "onChange",
     resolver: zodResolver(
-      formInput.refine((v) => v.borrowerEmail !== session.user?.email, {
+      formInput.refine((v) => v.borrowerEmail !== session?.user?.email, {
         message: "No puedes agregarte a ti mismo",
         path: ["borrowerEmail"],
       })
@@ -82,6 +80,7 @@ const MembersForm: React.FC<Props> = ({
     }));
   }
 
+  const apiContext = api.useUtils();
   const createMutation = api.debts.create.useMutation();
 
   async function handleCreate(): Promise<void> {
@@ -91,17 +90,12 @@ const MembersForm: React.FC<Props> = ({
       return;
     }
 
-    await toast.promise(
-      createMutation.mutateAsync({
-        body: result.data,
-      }),
-      {
-        loading: "Creando deuda...",
-        success: "Deuda creada",
-        error: handleMutationError,
-      }
-    );
-    await queryClient.invalidateQueries([contracts.debts.getLenderDebts, queryVariables]);
+    await toast.promise(createMutation.mutateAsync(result.data), {
+      loading: "Creando deuda...",
+      success: "Deuda creada",
+      error: handleMutationError,
+    });
+    await apiContext.debts.getLenderDebts.invalidate(queryVariables);
 
     setOpen(false);
     tabSetters.reset();

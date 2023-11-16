@@ -1,15 +1,15 @@
 import React from "react";
 import { Dialog } from "$/components/ui/dialog";
+import { api } from "$/lib/utils/api";
 import { TimeInMs } from "$/lib/enums/time";
 import { Loader } from "$/components/ui/loader";
 import { ScrollArea } from "$/components/ui/scroll-area";
 import { Button } from "$/components/ui/button";
 import { ArrowLeft, InfoIcon } from "lucide-react";
 import { PaymentStatus } from "@prisma/client";
-import { type GetLenderDebtsInput, type GetLenderDebtsResult } from "@deudamigo/ts-rest";
-import { api } from "$/lib/configs/react-query-client";
 import BorrowerRow from "$/pages/dashboard/_lib/components/debts-as-lender-tab/debt-as-lender-card/lender-actions-menu/payments-dialog/borrower-row";
 import PaymentRow from "$/pages/dashboard/_lib/components/debts-as-lender-tab/debt-as-lender-card/lender-actions-menu/payments-dialog/payment-row";
+import { type GetLenderDebtsInput, type GetLenderDebtsResult } from "@deudamigo/api-contracts";
 
 type Props = {
   open: boolean;
@@ -18,17 +18,12 @@ type Props = {
   queryVariables: GetLenderDebtsInput;
 };
 
-const PaymentsDialog: React.FC<Props> = ({ open, onOpenChange, debt }) => {
+const PaymentsDialog: React.FC<Props> = ({ open, onOpenChange, debt, queryVariables }) => {
   const [selectedBorrowerId, setSelectedBorrowerId] = React.useState<string | null>(null);
   const viewingBorrower = selectedBorrowerId !== null;
   const borrowers = debt.borrowers;
   const query = api.debtPayments.getPaymentsAsLender.useQuery(
-    [api.debtPayments.getPaymentsAsLender],
-    {
-      query: {
-        debtId: debt.id,
-      },
-    },
+    { debtId: debt.id },
     {
       enabled: open && selectedBorrowerId !== null,
       staleTime: TimeInMs.FiveSeconds,
@@ -37,7 +32,7 @@ const PaymentsDialog: React.FC<Props> = ({ open, onOpenChange, debt }) => {
       refetchOnMount: true,
     }
   );
-  const payments = query.data?.body.payments ?? [];
+  const payments = query.data?.payments ?? [];
   const descPayments = payments.sort((a, b) => {
     return b.createdAt.getTime() - a.createdAt.getTime();
   });
@@ -116,7 +111,12 @@ const PaymentsDialog: React.FC<Props> = ({ open, onOpenChange, debt }) => {
               ) : (
                 <React.Fragment>
                   {filteredPayments.map((payment) => (
-                    <PaymentRow payment={payment} debt={debt} key={payment.id} />
+                    <PaymentRow
+                      payment={payment}
+                      debt={debt}
+                      queryVariables={queryVariables}
+                      key={payment.id}
+                    />
                   ))}
                 </React.Fragment>
               )}

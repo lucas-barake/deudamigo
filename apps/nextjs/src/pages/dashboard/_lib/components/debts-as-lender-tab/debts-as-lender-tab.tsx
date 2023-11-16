@@ -1,16 +1,16 @@
 import React from "react";
+import { api } from "$/lib/utils/api";
 import { TimeInMs } from "$/lib/enums/time";
-import PageControls from "$/pages/dashboard/_lib/components/page-controls";
-import FiltersMenu from "src/pages/dashboard/_lib/components/filters-menu";
-import SortMenu from "$/pages/dashboard/_lib/components/sort-menu";
-import DebtCard from "src/pages/dashboard/_lib/components/debt-card";
-import PartnersFilterDialog from "src/pages/dashboard/_lib/components/partners-filter-dialog";
-import { api } from "$/lib/configs/react-query-client";
-import { contracts, DEBTS_QUERY_PAGINATION_LIMIT, getLenderDebtsInput } from "@deudamigo/ts-rest";
 import { useSessionStorage } from "$/lib/hooks/browser-storage/use-session-storage";
-import DebtAsLenderCard from "$/pages/dashboard/_lib/components/debts-as-lender-tab/debt-as-lender-card";
-import DebtsGrid from "$/pages/dashboard/_lib/components/debts-grid";
 import AddDebtDialog from "$/pages/dashboard/_lib/components/debts-as-lender-tab/add-debt-dialog";
+import PartnersFilterDialog from "$/pages/dashboard/_lib/components/partners-filter-dialog";
+import SortMenu from "$/pages/dashboard/_lib/components/sort-menu";
+import FiltersMenu from "$/pages/dashboard/_lib/components/filters-menu";
+import DebtsGrid from "$/pages/dashboard/_lib/components/debts-grid";
+import DebtAsLenderCard from "$/pages/dashboard/_lib/components/debts-as-lender-tab/debt-as-lender-card";
+import PageControls from "$/pages/dashboard/_lib/components/page-controls";
+import DebtCard from "$/pages/dashboard/_lib/components/debt-card";
+import { DEBTS_QUERY_PAGINATION_LIMIT, getLenderDebtsInput } from "@deudamigo/api-contracts";
 
 const DebtsAsLenderTab: React.FC = () => {
   const { state: queryVariables, setState: setQueryVariables } = useSessionStorage({
@@ -21,19 +21,15 @@ const DebtsAsLenderTab: React.FC = () => {
       status: "active",
       partnerEmail: null,
     },
-    key: "recurrent-debts-as-lender-tab-query-variables",
+    key: "debts-as-lender-tab-query-variables",
   });
 
-  const query = api.debts.getLenderDebts.useQuery(
-    [contracts.debts.getLenderDebts, queryVariables],
-    { query: queryVariables },
-    {
-      staleTime: TimeInMs.ThirtySeconds,
-      refetchOnWindowFocus: true,
-      refetchOnMount: true,
-    }
-  );
-  const debts = query.data?.body.debts ?? [];
+  const query = api.debts.getLenderDebts.useQuery(queryVariables, {
+    staleTime: TimeInMs.ThirtySeconds,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+  });
+  const debts = query.data?.debts ?? [];
 
   return (
     <React.Fragment>
@@ -83,7 +79,7 @@ const DebtsAsLenderTab: React.FC = () => {
       <DebtsGrid>
         {query.isLoading ? (
           <React.Fragment>
-            {Array.from({ length: DEBTS_QUERY_PAGINATION_LIMIT }).map((_, index) => (
+            {Array.from({ length: 8 }).map((_, index) => (
               <DebtCard.Skeleton key={index} />
             ))}
           </React.Fragment>
@@ -104,7 +100,7 @@ const DebtsAsLenderTab: React.FC = () => {
             skip: page * DEBTS_QUERY_PAGINATION_LIMIT,
           });
         }}
-        count={query.data?.body.count ?? 0}
+        count={query.data?.count ?? 0}
       />
     </React.Fragment>
   );

@@ -2,7 +2,7 @@ import React from "react";
 import { DropdownMenu } from "$/components/ui/dropdown-menu";
 import * as LucideIcons from "lucide-react";
 import { Button } from "$/components/ui/button";
-import { Prisma } from "@deudamigo/database";
+import { Prisma } from ".prisma/client";
 import SortOrder = Prisma.SortOrder;
 
 type Props = {
@@ -33,7 +33,8 @@ const SortMenu: React.FC<Props> = ({ setSelectedSort, selectedSort }) => {
           onClick={() => {
             setSelectedSort("asc");
           }}
-          checked={selectedSort === "asc"}>
+          checked={selectedSort === "asc"}
+        >
           Ascendente
         </DropdownMenu.CheckboxItem>
 
@@ -42,7 +43,8 @@ const SortMenu: React.FC<Props> = ({ setSelectedSort, selectedSort }) => {
           onClick={() => {
             setSelectedSort("desc");
           }}
-          checked={selectedSort === "desc"}>
+          checked={selectedSort === "desc"}
+        >
           Descendente
         </DropdownMenu.CheckboxItem>
       </DropdownMenu.Content>
